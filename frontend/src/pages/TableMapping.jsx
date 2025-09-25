@@ -5,7 +5,6 @@ import AddTableForm from "../components/AddTableForm.jsx";
 import TableList from "../components/TableList.jsx";
 import { API_URL } from "./api.js";
 
-
 export default function TableMapping() {
     const [tables, setTables] = useState([]);
     const navigate = useNavigate();
@@ -25,6 +24,15 @@ export default function TableMapping() {
 
     const handleBackClick = () => {
         navigate("/admin");
+    };
+
+    const handleLogout = () => {
+        // Clear any admin session data if needed
+        localStorage.removeItem('adminToken'); // if you have admin authentication
+        sessionStorage.clear();
+
+        // Navigate to login or home page
+        navigate("/login");
     };
 
     const handleDownloadQR = (table) => {
@@ -61,7 +69,6 @@ export default function TableMapping() {
             });
     };
 
-
     return (
         <div className="table-mapping">
             {/* Navbar */}
@@ -73,11 +80,13 @@ export default function TableMapping() {
                         <div className="back" onClick={handleBackClick}>
                             <img src="/back.png" height="35px" alt="Back" />
                         </div>
+                        {/* Logout Button */}
+                        <button className="logout-btn" onClick={handleLogout}>
+                            Logout
+                        </button>
                     </div>
                 </div>
             </nav>
-
-
 
             {/* Main Content */}
             <main className="mapping-content">
@@ -111,7 +120,7 @@ export default function TableMapping() {
                             }
                         }}
                     >
-                    <div className="form-group"><label>Table Number</label> <input type="text" name="tableNumber"
+                        <div className="form-group"><label>Table Number</label> <input type="text" name="tableNumber"
                                                                                        required/></div>
                         <div className="form-group"><label>Location</label> <input type="text" name="location"/></div>
                         <div className="form-group"><label>Type</label> <select name="type" required>
@@ -180,6 +189,23 @@ export default function TableMapping() {
                 .back { cursor: pointer; transition: transform 0.2s ease; }
                 .back:hover { transform: scale(1.1); }
 
+                /* Logout Button */
+                .logout-btn {
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    transition: background 0.3s ease;
+                }
+
+                .logout-btn:hover {
+                    background: #c0392b;
+                }
+
                 /* Layout */
                 .mapping-content { display: flex; padding: 2rem; gap: 2rem; }
                 .form-section, .tables-section { flex: 1; }
@@ -214,7 +240,46 @@ export default function TableMapping() {
                 .no-tables p { color: #7f8c8d; }
 
                 /* Responsive */
-                @media (max-width: 992px) { .mapping-content { flex-direction: column; } }
+                @media (max-width: 992px) {
+                    .mapping-content { flex-direction: column; }
+
+                    .navbar-content {
+                        padding: 0 1rem;
+                    }
+
+                    .navbar-nav {
+                        gap: 0.8rem;
+                    }
+
+                    .logout-btn {
+                        padding: 6px 12px;
+                        font-size: 0.8rem;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .navbar-content {
+                        flex-direction: column;
+                        gap: 0.5rem;
+                        text-align: center;
+                    }
+
+                    .navbar-nav {
+                        justify-content: center;
+                        gap: 0.8rem;
+                        margin-top: 0.5rem;
+                        flex-wrap: wrap;
+                    }
+
+                    .logout-btn {
+                        padding: 5px 10px;
+                        font-size: 0.7rem;
+                    }
+
+                    .mapping-content {
+                        padding: 1rem;
+                    }
+                }
             `}</style>
         </div>
     );

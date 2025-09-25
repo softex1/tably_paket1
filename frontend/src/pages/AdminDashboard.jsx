@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "./api.js";
 
 export default function AdminDashboard() {
     const [calls, setCalls] = useState([]);
@@ -16,16 +17,16 @@ export default function AdminDashboard() {
     }, []);
 
     const fetchCalls = () => {
-        fetch("http://localhost:8080/api/admin/calls/recent")
+        fetch(`${API_URL}/admin/calls/recent`)
             .then(res => res.json())
             .then(data => setCalls(data))
             .catch(err => console.error("Error fetching calls:", err));
     };
 
     const handleResolve = (id) => {
-        fetch(`http://localhost:8080/api/admin/calls/${id}/resolve`, { method: "POST" })
+        fetch(`${API_URL}/admin/calls/${id}/resolve`, { method: "POST" })
             .then(res => res.json())
-            .then(updatedCall => {
+            .then(() => {
                 setCalls(prev =>
                     prev.map(c => c.id === id ? { ...c, resolved: true } : c)
                 );
@@ -38,6 +39,15 @@ export default function AdminDashboard() {
 
     const handleAddClick = () => {
         navigate("/tables");
+    };
+
+    const handleLogout = () => {
+        // Clear any admin session data if needed
+        localStorage.removeItem('adminToken'); // if you have admin authentication
+        sessionStorage.clear();
+
+        // Navigate to login or home page
+        navigate("/login");
     };
 
     return (
@@ -59,6 +69,10 @@ export default function AdminDashboard() {
                                 alt="Add Table"
                             />
                         </div>
+                        {/* Logout Button */}
+                        <button className="logout-btn" onClick={handleLogout}>
+                            Logout
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -162,6 +176,23 @@ export default function AdminDashboard() {
 
                 .add:hover {
                     transform: scale(1.1);
+                }
+
+                /* Logout Button */
+                .logout-btn {
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    transition: background 0.3s ease;
+                }
+
+                .logout-btn:hover {
+                    background: #c0392b;
                 }
 
                 .admin-dashboard {
@@ -413,6 +444,11 @@ export default function AdminDashboard() {
                         font-size: 0.9rem;
                     }
 
+                    .logout-btn {
+                        padding: 6px 12px;
+                        font-size: 0.8rem;
+                    }
+
                     .no-calls {
                         padding: 3rem 1.5rem;
                         max-width: 500px;
@@ -445,8 +481,14 @@ export default function AdminDashboard() {
 
                     .navbar-nav {
                         justify-content: center;
-                        gap: 1rem;
+                        gap: 0.8rem;
                         margin-top: 0.5rem;
+                        flex-wrap: wrap;
+                    }
+
+                    .logout-btn {
+                        padding: 5px 10px;
+                        font-size: 0.7rem;
                     }
 
                     .dashboard-content {

@@ -1,19 +1,40 @@
-import {BrowserRouter as Router, Routes, Route, HashRouter} from 'react-router-dom';
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import TableMapping from './pages/TableMapping.jsx';
-import ClientPage from "./pages/ClientPage.jsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import TableMapping from "./pages/TableMapping";
+import ClientPage from "./pages/ClientPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
+export default function App() {
     return (
-        <Router>
+        <BrowserRouter>
             <Routes>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/tables" element={<TableMapping />} />
+                {/* Public routes */}
+                <Route path="/login" element={<LoginPage />} />
+
+                {/* Protected routes (admin only) */}
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute>
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/tables"
+                    element={
+                        <ProtectedRoute>
+                            <TableMapping />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Public client routes (scanned by customers) */}
                 <Route path="/table/:id" element={<ClientPage />} />
                 <Route path="/table/:id/:token" element={<ClientPage />} />
             </Routes>
-        </Router>
+        </BrowserRouter>
     );
 }
-
-export default App;

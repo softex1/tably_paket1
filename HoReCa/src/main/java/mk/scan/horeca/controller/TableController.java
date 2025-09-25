@@ -92,15 +92,9 @@ public class TableController {
 
     // Delete table
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTable(
-            @PathVariable Long id,
-            @RequestHeader(value = "X-Session-Token", required = false) String sessionToken) {
-
-        if (sessionToken == null || !sessionService.validateSession(sessionToken)) {
-            return ResponseEntity.status(403).body("Unauthorized: session expired or invalid.");
-        }
-
+    public ResponseEntity<?> deleteTable(@PathVariable Long id) {
         tableService.deleteTable(id);
         return ResponseEntity.noContent().build();
     }
+
 }

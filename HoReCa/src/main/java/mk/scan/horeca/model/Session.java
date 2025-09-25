@@ -1,7 +1,6 @@
 package mk.scan.horeca.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ public class Session {
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
 
-    private boolean active = true; // default to true
+    private boolean active = true;
 
     public Session() {}
 
@@ -32,9 +31,20 @@ public class Session {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
+        boolean expired = LocalDateTime.now().isAfter(expiresAt);
+        if (expired && active) {
+            // Auto-deactivate when expired
+            active = false;
+        }
+        return expired;
     }
 
+    // Add a method to check validity that includes both active status and expiration
+    public boolean isValid() {
+        return active && !isExpired();
+    }
+
+    // Rest of your getters and setters remain the same...
     public Long getId() {
         return id;
     }
@@ -82,5 +92,4 @@ public class Session {
     public void setActive(boolean active) {
         this.active = active;
     }
-
 }

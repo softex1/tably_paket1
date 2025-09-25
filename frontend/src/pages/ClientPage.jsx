@@ -21,7 +21,6 @@ export default function ClientPage() {
         );
     }
 
-    // inside useEffect
     useEffect(() => {
         if (urlToken) {
             // validate existing token
@@ -49,29 +48,43 @@ export default function ClientPage() {
             return;
         }
 
-        // 🚀 if qrIdentifier is present but NO token → auto create session
+        // 🚀 Auto-create session ONLY if this is the initial QR scan
         if (qrIdentifier) {
-            fetch(`${API_URL}/sessions/qr/${qrIdentifier}`, { method: "POST" })
-                .then(res => res.json())
-                .then(data => {
-                    navigate(`/table/${qrIdentifier}/${data.token}`, { replace: true });
-                    setSessionActive(true);
-                    setRequiresRescan(false);
-                    setMessage("");
-                })
-                .catch(err => {
-                    console.error(err);
-                    setSessionActive(false);
-                    setRequiresRescan(true);
-                    setMessage("Error creating session. Please rescan QR.");
-                });
+            // Check if this is the first time visiting this QR (no previous session stored)
+            const storedQR = sessionStorage.getItem('currentQR');
+
+            if (storedQR !== qrIdentifier) {
+                // This is a new QR scan - create session
+                sessionStorage.setItem('currentQR', qrIdentifier);
+
+                fetch(`${API_URL}/sessions/qr/${qrIdentifier}`, { method: "POST" })
+                    .then(res => res.json())
+                    .then(data => {
+                        navigate(`/table/${qrIdentifier}/${data.token}`, { replace: true });
+                        setSessionActive(true);
+                        setRequiresRescan(false);
+                        setMessage("");
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        sessionStorage.removeItem('currentQR');
+                        setSessionActive(false);
+                        setRequiresRescan(true);
+                        setMessage("Error creating session. Please rescan QR.");
+                    });
+            } else {
+                // User manually edited URL - don't create new session
+                setSessionActive(false);
+                setRequiresRescan(true);
+                setMessage("Session expired. Please scan QR again.");
+            }
         } else {
             // no qrIdentifier at all
             setSessionActive(false);
             setRequiresRescan(true);
             setMessage("Please scan QR code to start session.");
         }
-    }, [qrIdentifier, urlToken]);
+    }, [qrIdentifier, urlToken, navigate]);
 
 
     // Function to create session ONLY when QR is scanned
@@ -192,7 +205,7 @@ export default function ClientPage() {
                     <button
                         className="action-button"
                         onClick={() => handleCall("waiter")}
-                        disabled={!sessionActive || cooldown || requiresRescan}
+                        disabled={!sessionActive || cooldown || requiresRescan || !urlToken}  // Added !urlToken here
                     >
                         <div className="button-icon"><img src="/waiter_symbol.png" height="30px" alt="Call Waiter" /></div>
                         <p>Call Waiter</p>
@@ -201,7 +214,7 @@ export default function ClientPage() {
                     <button
                         className="action-button"
                         onClick={() => handleCall("bill")}
-                        disabled={!sessionActive || cooldown || requiresRescan}
+                        disabled={!sessionActive || cooldown || requiresRescan || !urlToken}  // Added !urlToken here
                     >
                         <div className="button-icon"><img src="/bill_symbol.png" height="30px" alt="Call Bill" /></div>
                         <p>Call Bill</p>

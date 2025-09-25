@@ -4,6 +4,7 @@ import mk.scan.horeca.model.Session;
 import mk.scan.horeca.model.TableEntity;
 import mk.scan.horeca.repository.SessionRepository;
 import mk.scan.horeca.repository.TableRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,14 +30,14 @@ public class SessionService {
         TableEntity table = tableRepo.findByQrIdentifier(qrIdentifier)
                 .orElseThrow(() -> new RuntimeException("Table not found"));
 
-        // Deactivate ALL active sessions for this table (prevent multiple sessions)
-        var activeSessions = sessionRepo.findAllByTableAndActive(table, true);
-        for (Session s : activeSessions) {
-            s.setActive(false);
-            sessionRepo.save(s);
-        }
+        // 🟢 REMOVED the session deactivation - allow multiple sessions
+        // var activeSessions = sessionRepo.findAllByTableAndActive(table, true);
+        // for (Session s : activeSessions) {
+        //     s.setActive(false);
+        //     sessionRepo.save(s);
+        // }
 
-        // Create new session
+        // Create new session for the new phone
         Session session = new Session();
         session.setTable(table);
         session.setToken(UUID.randomUUID().toString());
@@ -66,14 +67,14 @@ public class SessionService {
         sessionRepo.save(session);
     }
 
-    // Add this method to your SessionService to handle token cleanup
+    /** ✅ Clean up expired sessions periodically */
+    @Scheduled(fixedRate = 5000) // Run every minute
     @Transactional
     public void cleanupExpiredSessions() {
-        List<Session> expiredSessions = sessionRepo.findAllByActiveTrue();
-        for (Session session : expiredSessions) {
+        List<Session> activeSessions = sessionRepo.findAllByActiveTrue();
+        for (Session session : activeSessions) {
             if (session.isExpired()) {
-                session.setActive(false);
-                sessionRepo.save(session);
+                sessionRepo.save(session); // This will save with active=false
             }
         }
     }
