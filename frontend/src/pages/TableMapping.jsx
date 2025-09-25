@@ -7,7 +7,21 @@ import { API_URL } from "./api.js";
 
 export default function TableMapping() {
     const [tables, setTables] = useState([]);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [password, setPassword] = useState("");
+    const [tableToDelete, setTableToDelete] = useState(null);
+    const [passwordError, setPasswordError] = useState("");
     const navigate = useNavigate();
+
+    // Get current admin info from localStorage/sessionStorage
+    // Get current admin info from sessionStorage
+    const getCurrentAdmin = () => {
+        const adminData = sessionStorage.getItem('adminData'); // Changed to sessionStorage
+        if (adminData) {
+            return JSON.parse(adminData);
+        }
+        return null;
+    };
 
     const fetchTables = () => {
         fetch(`${API_URL}/tables`)
@@ -16,7 +30,15 @@ export default function TableMapping() {
             .catch(err => console.error(err));
     };
 
-    useEffect(() => { fetchTables(); }, []);
+    useEffect(() => {
+        // Check if admin is logged in
+        const admin = getCurrentAdmin();
+        if (!admin) {
+            navigate("/login");
+            return;
+        }
+        fetchTables();
+    }, [navigate]);
 
     const handleTableAdded = (newTable) => {
         setTables(prev => [...prev, newTable]);
@@ -27,11 +49,8 @@ export default function TableMapping() {
     };
 
     const handleLogout = () => {
-        // Clear any admin session data if needed
-        localStorage.removeItem('adminToken'); // if you have admin authentication
-        sessionStorage.clear();
-
-        // Navigate to login or home page
+        // Clear sessionStorage instead of localStorage
+        sessionStorage.removeItem('adminData');
         navigate("/login");
     };
 
@@ -50,33 +69,108 @@ export default function TableMapping() {
         document.body.removeChild(link);
     };
 
-    const handleDelete = (tableId) => {
-        if (!window.confirm("Are you sure you want to delete this table?")) {
-            return; // stop if user clicks "Cancel"
+    const handleDelete = (tableId, tableNumber) => {
+        const admin = getCurrentAdmin();
+        if (!admin) {
+            navigate("/login");
+            return;
         }
 
-        fetch(`${API_URL}/tables/${tableId}`, {
-            method: "DELETE"
+        setTableToDelete({ id: tableId, number: tableNumber });
+        setShowPasswordModal(true);
+        setPassword("");
+        setPasswordError("");
+    };
+
+    const confirmDelete = () => {
+        const admin = getCurrentAdmin();
+        if (!admin) {
+            navigate("/login");
+            return;
+        }
+
+        if (!password.trim()) {
+            setPasswordError("Password is required");
+            return;
+        }
+
+        // Send admin ID and password for verification
+        fetch(`${API_URL}/tables/${tableToDelete.id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Admin-Id": admin.adminId,
+                "X-Delete-Password": password
+            }
         })
-            .then(res => {
-                if (!res.ok) throw new Error("Failed to delete table");
-                // Re-fetch all tables to refresh UI
-                fetchTables();
+            .then(async res => {
+                if (res.ok) {
+                    // Re-fetch all tables to refresh UI
+                    fetchTables();
+                    setShowPasswordModal(false);
+                    setTableToDelete(null);
+                    setPassword("");
+                } else {
+                    const errorText = await res.text();
+                    setPasswordError(errorText || "Invalid password");
+                }
             })
             .catch(err => {
                 console.error(err);
-                alert("Failed to delete table");
+                setPasswordError("Failed to delete table");
             });
+    };
+
+    const cancelDelete = () => {
+        setShowPasswordModal(false);
+        setTableToDelete(null);
+        setPassword("");
+        setPasswordError("");
     };
 
     return (
         <div className="table-mapping">
+            {/* Password Confirmation Modal */}
+            {showPasswordModal && (
+                <div className="modal-overlay">
+                    <div className="password-modal">
+                        <h3>Confirm Deletion</h3>
+                        <p>Are you sure you want to delete <strong>Table {tableToDelete?.number}</strong>?</p>
+                        <p>Please enter your password to confirm:</p>
+
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter your password"
+                            className="password-input"
+                            autoFocus
+                        />
+
+                        {passwordError && <p className="error-message">{passwordError}</p>}
+
+                        <div className="modal-actions">
+                            <button onClick={cancelDelete} className="cancel-btn">
+                                Cancel
+                            </button>
+                            <button onClick={confirmDelete} className="confirm-delete-btn">
+                                Delete Table
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Navbar */}
             <nav className="dashboard-navbar">
                 <div className="navbar-content">
                     <h1>Table Mapping</h1>
                     <div className="navbar-nav">
                         <div className="table-count">{tables.length} Tables</div>
+                        {/* Alternative using emoji if you don't have an image */}
+                        <div className="users-btn" onClick={() => navigate("/users")}>
+                            <span style={{fontSize: '1.5rem'}}>👥</span>
+                            <span>Users</span>
+                        </div>
                         <div className="back" onClick={handleBackClick}>
                             <img src="/back.png" height="35px" alt="Back" />
                         </div>
@@ -161,7 +255,7 @@ export default function TableMapping() {
                                         </button>
                                         <button
                                             className="delete-btn"
-                                            onClick={() => handleDelete(table.id)}
+                                            onClick={() => handleDelete(table.id, table.tableNumber)}
                                         >
                                             ❌ Delete
                                         </button>
@@ -180,6 +274,116 @@ export default function TableMapping() {
                 .table-mapping { min-height: 100vh; background: #f5f7fa; font-family: 'OpenSans','Segoe UI',sans-serif; width: 100%; }
                 @font-face { font-family: 'OpenSans'; src: url('/OpenSans.ttf') format('opentype'); }
 
+                .users-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    cursor: pointer;
+                    transition: transform 0.2s ease;
+                    color: white;
+                    font-weight: 500;
+                }
+
+                .users-btn:hover {
+                    transform: scale(1.1);
+                }
+
+                .users-btn span {
+                    font-size: 0.9rem;
+                }
+
+                /* Modal Styles */
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+
+                .password-modal {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    width: 90%;
+                    max-width: 400px;
+                    text-align: center;
+                }
+
+                .password-modal h3 {
+                    color: #e74c3c;
+                    margin-bottom: 1rem;
+                    font-size: 1.5rem;
+                }
+
+                .password-modal p {
+                    margin-bottom: 1rem;
+                    color: #555;
+                }
+
+                .password-input {
+                    width: 100%;
+                    padding: 0.8rem;
+                    border: 2px solid #ddd;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    margin-bottom: 1rem;
+                }
+
+                .password-input:focus {
+                    outline: none;
+                    border-color: #3498db;
+                }
+
+                .error-message {
+                    color: #e74c3c;
+                    margin-bottom: 1rem;
+                    font-size: 0.9rem;
+                }
+
+                .modal-actions {
+                    display: flex;
+                    gap: 1rem;
+                    justify-content: center;
+                }
+
+                .cancel-btn {
+                    background: #95a5a6;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: background 0.2s ease;
+                }
+
+                .cancel-btn:hover {
+                    background: #7f8c8d;
+                }
+
+                .confirm-delete-btn {
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: background 0.2s ease;
+                }
+
+                .confirm-delete-btn:hover {
+                    background: #c0392b;
+                }
+                
+                
                 /* Navbar */
                 .dashboard-navbar { background: #222; color: white; padding: 1rem 0; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
                 .navbar-content { width: 100%; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }

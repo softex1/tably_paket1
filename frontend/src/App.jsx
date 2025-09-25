@@ -1,40 +1,53 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import AdminDashboard from "./pages/AdminDashboard";
-import TableMapping from "./pages/TableMapping";
-import ClientPage from "./pages/ClientPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+import {BrowserRouter as Router, Routes, Route, Navigate, useLocation} from 'react-router-dom';
+import AdminDashboard from './pages/AdminDashboard.jsx';
+import TableMapping from './pages/TableMapping.jsx';
+import ClientPage from "./pages/ClientPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import UsersPage from "./pages/UsersPage.jsx";
 
-export default function App() {
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+    const location = useLocation();
+    const adminData = sessionStorage.getItem('adminData');
+
+    if (!adminData) {
+        // Redirect to login page with the return url
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return children;
+};
+
+function App() {
     return (
-        <BrowserRouter>
+        <Router>
             <Routes>
-                {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
-
-                {/* Protected routes (admin only) */}
-                <Route
-                    path="/admin"
-                    element={
-                        <ProtectedRoute>
-                            <AdminDashboard />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/tables"
-                    element={
-                        <ProtectedRoute>
-                            <TableMapping />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Public client routes (scanned by customers) */}
                 <Route path="/table/:id" element={<ClientPage />} />
                 <Route path="/table/:id/:token" element={<ClientPage />} />
+
+                {/* Protected Routes */}
+                <Route path="/admin" element={
+                    <ProtectedRoute>
+                        <AdminDashboard />
+                    </ProtectedRoute>
+                } />
+                <Route path="/tables" element={
+                    <ProtectedRoute>
+                        <TableMapping />
+                    </ProtectedRoute>
+                } />
+                <Route path="/users" element={
+                    <ProtectedRoute>
+                        <UsersPage />
+                    </ProtectedRoute>
+                } />
+
+                {/* Default redirect */}
+                <Route path="/" element={<Navigate to="/admin" replace />} />
             </Routes>
-        </BrowserRouter>
+        </Router>
     );
 }
+
+export default App;

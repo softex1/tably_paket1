@@ -6,7 +6,22 @@ export default function AdminDashboard() {
     const [calls, setCalls] = useState([]);
     const navigate = useNavigate();
 
+    // Get current admin info from sessionStorage
+    const getCurrentAdmin = () => {
+        const adminData = sessionStorage.getItem('adminData'); // Changed to sessionStorage
+        if (adminData) {
+            return JSON.parse(adminData);
+        }
+        return null;
+    };
+
     useEffect(() => {
+        const admin = getCurrentAdmin();
+        if (!admin) {
+            navigate("/login");
+            return;
+        }
+
         fetchCalls();
 
         const interval = setInterval(() => {
@@ -14,7 +29,7 @@ export default function AdminDashboard() {
         }, 10000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [navigate]);
 
     const fetchCalls = () => {
         fetch(`${API_URL}/admin/calls/recent`)
@@ -42,11 +57,8 @@ export default function AdminDashboard() {
     };
 
     const handleLogout = () => {
-        // Clear any admin session data if needed
-        localStorage.removeItem('adminToken'); // if you have admin authentication
-        sessionStorage.clear();
-
-        // Navigate to login or home page
+        // Clear sessionStorage instead of localStorage
+        sessionStorage.removeItem('adminData');
         navigate("/login");
     };
 

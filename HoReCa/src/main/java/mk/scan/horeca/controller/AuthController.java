@@ -35,9 +35,15 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid username or password");
         }
 
-        // Generate a fake token (you can implement JWT later)
+        // Generate a simple token (store it with user info)
         String token = UUID.randomUUID().toString();
 
-        return ResponseEntity.ok(Map.of("token", token));
+        // In a real app, you'd store this token in a database with admin ID
+        // For now, we'll return the admin ID so frontend can store it
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "adminId", admin.getId(),
+                "username", admin.getUsername()
+        ));
     }
 }

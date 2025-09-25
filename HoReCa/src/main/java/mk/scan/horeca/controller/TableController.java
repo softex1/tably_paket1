@@ -1,10 +1,13 @@
 package mk.scan.horeca.controller;
 
+import mk.scan.horeca.model.Admin;
 import mk.scan.horeca.model.TableEntity;
+import mk.scan.horeca.repository.AdminRepository;
 import mk.scan.horeca.repository.TableRepository;
 import mk.scan.horeca.service.QRCodeService;
 import mk.scan.horeca.service.SessionService;
 import mk.scan.horeca.service.TableService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,15 +20,17 @@ public class TableController {
     private final QRCodeService qrCodeService;
     private final SessionService sessionService;
     private final TableRepository tableRepo;
+    private final AdminRepository adminRepository;
 
     public TableController(TableService tableService,
                            QRCodeService qrCodeService,
                            SessionService sessionService,
-                           TableRepository tableRepo) {
+                           TableRepository tableRepo, AdminRepository adminRepository) {
         this.tableService = tableService;
         this.qrCodeService = qrCodeService;
         this.sessionService = sessionService;
         this.tableRepo = tableRepo;
+        this.adminRepository = adminRepository;
     }
 
     // Create a new table
@@ -90,11 +95,38 @@ public class TableController {
         return tableService.getByQrIdentifier(qrIdentifier);
     }
 
-    // Delete table
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTable(@PathVariable Long id) {
-        tableService.deleteTable(id);
-        return ResponseEntity.noContent().build();
-    }
+    public ResponseEntity<?> deleteTable(@PathVariable Long id,
+                                         @RequestHeader(value = "X-Admin-Id") Long adminId,
+                                         @RequestHeader(value = "X-Delete-Password") String password) {
 
+        // Validate admin exists
+        Optional<Admin> adminOpt = adminRepository.findById(adminId);
+        if (adminOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Admin not found");
+        }
+
+        Admin admin = adminOpt.get();
+
+        // Validate password matches the logged-in admin's password
+        if (!admin.getPassword().equals(password)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid password");
+        }
+
+        // Check if table exists
+        if (!tableRepo.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Table not found with id: " + id);
+        }
+
+        try {
+            tableService.deleteTable(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting table: " + e.getMessage());
+        }
+    }
 }
