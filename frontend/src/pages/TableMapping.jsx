@@ -1,9 +1,9 @@
 // src/pages/TableMapping.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AddTableForm from "../components/AddTableForm.jsx";
-import TableList from "../components/TableList.jsx";
 import { API_URL } from "./api.js";
+import { useTranslation } from "../contexts/TranslationContext.jsx";
+import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
 
 export default function TableMapping() {
     const [tables, setTables] = useState([]);
@@ -12,11 +12,11 @@ export default function TableMapping() {
     const [tableToDelete, setTableToDelete] = useState(null);
     const [passwordError, setPasswordError] = useState("");
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
-    // Get current admin info from localStorage/sessionStorage
     // Get current admin info from sessionStorage
     const getCurrentAdmin = () => {
-        const adminData = sessionStorage.getItem('adminData'); // Changed to sessionStorage
+        const adminData = sessionStorage.getItem('adminData');
         if (adminData) {
             return JSON.parse(adminData);
         }
@@ -49,18 +49,16 @@ export default function TableMapping() {
     };
 
     const handleLogout = () => {
-        // Clear sessionStorage instead of localStorage
         sessionStorage.removeItem('adminData');
         navigate("/login");
     };
 
     const handleDownloadQR = (table) => {
         if (!table.qrCodeBase64) {
-            alert("QR code not available for this table!");
+            alert(t('qrNotAvailable'));
             return;
         }
 
-        // Create a temporary <a> element to trigger download
         const link = document.createElement("a");
         link.href = `data:image/png;base64,${table.qrCodeBase64}`;
         link.download = `table-${table.tableNumber}.png`;
@@ -90,11 +88,10 @@ export default function TableMapping() {
         }
 
         if (!password.trim()) {
-            setPasswordError("Password is required");
+            setPasswordError(t('passwordRequired'));
             return;
         }
 
-        // Send admin ID and password for verification
         fetch(`${API_URL}/tables/${tableToDelete.id}`, {
             method: "DELETE",
             headers: {
@@ -105,19 +102,18 @@ export default function TableMapping() {
         })
             .then(async res => {
                 if (res.ok) {
-                    // Re-fetch all tables to refresh UI
                     fetchTables();
                     setShowPasswordModal(false);
                     setTableToDelete(null);
                     setPassword("");
                 } else {
                     const errorText = await res.text();
-                    setPasswordError(errorText || "Invalid password");
+                    setPasswordError(errorText || t('invalidPassword'));
                 }
             })
             .catch(err => {
                 console.error(err);
-                setPasswordError("Failed to delete table");
+                setPasswordError(t('failedToDeleteTable'));
             });
     };
 
@@ -134,15 +130,15 @@ export default function TableMapping() {
             {showPasswordModal && (
                 <div className="modal-overlay">
                     <div className="password-modal">
-                        <h3>Confirm Deletion</h3>
-                        <p>Are you sure you want to delete <strong>Table {tableToDelete?.number}</strong>?</p>
-                        <p>Please enter your password to confirm:</p>
+                        <h3>{t('confirmDelete')}</h3>
+                        <p>{t('confirmDeleteMessage', { tableNumber: tableToDelete?.number })}</p>
+                        <p>{t('enterPassword')}</p>
 
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
+                            placeholder={t('enterPassword')}
                             className="password-input"
                             autoFocus
                         />
@@ -151,32 +147,42 @@ export default function TableMapping() {
 
                         <div className="modal-actions">
                             <button onClick={cancelDelete} className="cancel-btn">
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button onClick={confirmDelete} className="confirm-delete-btn">
-                                Delete Table
+                                {t('deleteTable')}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
             {/* Navbar */}
             <nav className="dashboard-navbar">
                 <div className="navbar-content">
-                    <h1>Table Mapping</h1>
+                    <h1>{t('tableMapping')}</h1>
                     <div className="navbar-nav">
-                        <div className="table-count">{tables.length} Tables</div>
-                        {/* Alternative using emoji if you don't have an image */}
+                        <div className="table-count">{tables.length} {t('tables')}</div>
+
+                        {/* Back Button */}
+                        <div className="back" onClick={handleBackClick}>
+                            {/*<img src="/back.png" height="35px" alt={t('back')} />*/}
+                            <p><b>Back</b></p>
+                        </div>
+
+                        {/* Language Selector */}
+                        <div className="navbar-language-selector">
+                            <LanguageSwitcher variant="navbar" />
+                        </div>
+
+                        {/* Users Button */}
                         <div className="users-btn" onClick={() => navigate("/users")}>
                             <span style={{fontSize: '1.5rem'}}>👥</span>
-                            <span>Users</span>
                         </div>
-                        <div className="back" onClick={handleBackClick}>
-                            <img src="/back.png" height="35px" alt="Back" />
-                        </div>
+
                         {/* Logout Button */}
                         <button className="logout-btn" onClick={handleLogout}>
-                            Logout
+                            {t('logout')}
                         </button>
                     </div>
                 </div>
@@ -185,7 +191,8 @@ export default function TableMapping() {
             {/* Main Content */}
             <main className="mapping-content">
                 {/* Left: Form */}
-                <section className="form-section"><h2>Add New Table</h2>
+                <section className="form-section">
+                    <h2>{t('addNewTable')}</h2>
                     <form
                         className="table-form"
                         onSubmit={async (e) => {
@@ -204,24 +211,30 @@ export default function TableMapping() {
                                     body: JSON.stringify(newTable),
                                 });
 
-                                // Re-fetch all tables from backend to refresh UI
                                 fetchTables();
-
                                 form.reset();
                             } catch (err) {
                                 console.error(err);
-                                alert("Failed to add table");
+                                alert(t('failedToAddTable'));
                             }
                         }}
                     >
-                        <div className="form-group"><label>Table Number</label> <input type="text" name="tableNumber"
-                                                                                       required/></div>
-                        <div className="form-group"><label>Location</label> <input type="text" name="location"/></div>
-                        <div className="form-group"><label>Type</label> <select name="type" required>
-                            <option value="HIGH">High Table</option>
-                            <option value="LOW">Low Table</option>
-                        </select></div>
-                        <button type="submit" className="add-btn">Add Table</button>
+                        <div className="form-group">
+                            <label>{t('tableNumber')}</label>
+                            <input type="text" name="tableNumber" required />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('location')}</label>
+                            <input type="text" name="location" />
+                        </div>
+                        <div className="form-group">
+                            <label>{t('type')}</label>
+                            <select name="type" required>
+                                <option value="HIGH">{t('highTable')}</option>
+                                <option value="LOW">{t('lowTable')}</option>
+                            </select>
+                        </div>
+                        <button type="submit" className="add-btn">{t('addTable')}</button>
                     </form>
                 </section>
 
@@ -230,20 +243,20 @@ export default function TableMapping() {
                     {tables.length === 0 ? (
                         <div className="no-tables">
                             <div className="no-tables-icon">🍽️</div>
-                            <h2>No Tables Added</h2>
-                            <p>Add tables using the form on the left to get started</p>
+                            <h2>{t('noTablesAdded')}</h2>
+                            <p>{t('addTablesToStart')}</p>
                         </div>
                     ) : (
                         <div className="tables-list">
                             {tables.map((table) => (
                                 <div key={table.id} className="table-card">
                                     <div>
-                                        <h3 className="table-title">Table {table.tableNumber}</h3>
+                                        <h3 className="table-title">{t('table')} {table.tableNumber}</h3>
                                         <p className="table-location">
-                                            📍 {table.location}
+                                            📍 {table.location || t('mainHall')}
                                         </p>
                                         <p className="table-type">
-                                            {table.type === "HIGH" ? "🔝 High Table" : "⬇️ Low Table"}
+                                            {table.type === "HIGH" ? "🔝 " + t('highTable') : "⬇️ " + t('lowTable')}
                                         </p>
                                     </div>
                                     <div className="card-actions">
@@ -251,13 +264,13 @@ export default function TableMapping() {
                                             className="download-btn"
                                             onClick={() => handleDownloadQR(table)}
                                         >
-                                            ⬇️ Download QR
+                                            ⬇️ {t('downloadQR')}
                                         </button>
                                         <button
                                             className="delete-btn"
                                             onClick={() => handleDelete(table.id, table.tableNumber)}
                                         >
-                                            ❌ Delete
+                                            ❌ {t('delete')}
                                         </button>
                                     </div>
                                 </div>
@@ -290,6 +303,12 @@ export default function TableMapping() {
 
                 .users-btn span {
                     font-size: 0.9rem;
+                }
+
+                /* Navbar Language Selector */
+                .navbar-language-selector {
+                    display: flex;
+                    align-items: center;
                 }
 
                 /* Modal Styles */
@@ -382,8 +401,7 @@ export default function TableMapping() {
                 .confirm-delete-btn:hover {
                     background: #c0392b;
                 }
-                
-                
+
                 /* Navbar */
                 .dashboard-navbar { background: #222; color: white; padding: 1rem 0; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
                 .navbar-content { width: 100%; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
@@ -446,19 +464,9 @@ export default function TableMapping() {
                 /* Responsive */
                 @media (max-width: 992px) {
                     .mapping-content { flex-direction: column; }
-
-                    .navbar-content {
-                        padding: 0 1rem;
-                    }
-
-                    .navbar-nav {
-                        gap: 0.8rem;
-                    }
-
-                    .logout-btn {
-                        padding: 6px 12px;
-                        font-size: 0.8rem;
-                    }
+                    .navbar-content { padding: 0 1rem; }
+                    .navbar-nav { gap: 0.8rem; }
+                    .logout-btn { padding: 6px 12px; font-size: 0.8rem; }
                 }
 
                 @media (max-width: 768px) {
@@ -467,19 +475,16 @@ export default function TableMapping() {
                         gap: 0.5rem;
                         text-align: center;
                     }
-
                     .navbar-nav {
                         justify-content: center;
                         gap: 0.8rem;
                         margin-top: 0.5rem;
                         flex-wrap: wrap;
                     }
-
                     .logout-btn {
                         padding: 5px 10px;
                         font-size: 0.7rem;
                     }
-
                     .mapping-content {
                         padding: 1rem;
                     }

@@ -3,22 +3,22 @@ package mk.scan.horeca.controller;
 import mk.scan.horeca.repository.SessionRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Component
 public class SessionCleanupTask {
 
-    private final SessionRepository sessionRepo;
+    private final SessionRepository sessionRepository;
 
-    public SessionCleanupTask(SessionRepository sessionRepo) {
-        this.sessionRepo = sessionRepo;
+    public SessionCleanupTask(SessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
     }
 
-    // Run every 5 minutes
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(fixedRate = 60000) // example: every 60s
+    @Transactional
     public void cleanupExpiredSessions() {
-        LocalDateTime now = LocalDateTime.now();
-        sessionRepo.deleteByExpiresAtBefore(now);
+        sessionRepository.deleteByExpiresAtBefore(LocalDateTime.now());
     }
 }

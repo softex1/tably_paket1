@@ -47,4 +47,43 @@ public class UserController {
 
         return ResponseEntity.ok("User created successfully");
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+
+        if (oldPassword == null || newPassword == null) {
+            return ResponseEntity.badRequest().body("Old password and new password are required");
+        }
+
+        Optional<Admin> userOptional = adminRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Admin user = userOptional.get();
+
+        // Verify old password
+        if (!user.getPassword().equals(oldPassword)) {
+            return ResponseEntity.badRequest().body("Old password is incorrect");
+        }
+
+        // Update password
+        user.setPassword(newPassword);
+        adminRepository.save(user);
+
+        return ResponseEntity.ok("Password updated successfully");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        Optional<Admin> userOptional = adminRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        adminRepository.delete(userOptional.get());
+        return ResponseEntity.ok("User deleted successfully");
+    }
 }

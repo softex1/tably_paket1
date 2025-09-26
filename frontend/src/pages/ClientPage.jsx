@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_URL } from "./api.js";
+import { useTranslation } from "../contexts/TranslationContext.jsx";
+import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
 
 export default function ClientPage() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -10,16 +12,26 @@ export default function ClientPage() {
     const [requiresRescan, setRequiresRescan] = useState(false);
     const navigate = useNavigate();
     const { id: qrIdentifier, token: urlToken } = useParams();
+    const { t } = useTranslation();
 
     if (!isMobile) {
         return (
-            <div style={{ textAlign: "center", padding: "50px" }}>
-                <h1>SCAN.MK</h1>
-                <p>This page is only available on mobile devices.</p>
-                <p>Please scan the QR code with your phone or tablet.</p>
-            </div>
+            <>
+                <div style={{ textAlign: "center", padding: "50px" }}>
+                    <h1>SCAN.MK</h1>
+                    <p>{t("thisPageMobileOnly")}</p>
+                    <p>{t("scanWithPhone")}</p>
+                </div>
+
+                <style>{`
+                #root {
+                    width: 100%;
+                }
+            `}</style>
+            </>
         );
     }
+
 
     useEffect(() => {
         if (urlToken) {
@@ -37,13 +49,13 @@ export default function ClientPage() {
                     } else {
                         setSessionActive(false);
                         setRequiresRescan(true);
-                        setMessage("Session expired. Please scan QR again.");
+                        setMessage(t('sessionExpired'));
                     }
                 })
                 .catch(() => {
                     setSessionActive(false);
                     setRequiresRescan(true);
-                    setMessage("Error validating session. Please scan QR again.");
+                    setMessage(t('errorValidatingSession'));
                 });
             return;
         }
@@ -70,28 +82,27 @@ export default function ClientPage() {
                         sessionStorage.removeItem('currentQR');
                         setSessionActive(false);
                         setRequiresRescan(true);
-                        setMessage("Error creating session. Please rescan QR.");
+                        setMessage(t('errorCreatingSession'));
                     });
             } else {
                 // User manually edited URL - don't create new session
                 setSessionActive(false);
                 setRequiresRescan(true);
-                setMessage("Session expired. Please scan QR again.");
+                setMessage(t('sessionExpired'));
             }
         } else {
             // no qrIdentifier at all
             setSessionActive(false);
             setRequiresRescan(true);
-            setMessage("Please scan QR code to start session.");
+            setMessage(t('scanQR'));
         }
-    }, [qrIdentifier, urlToken, navigate]);
-
+    }, [qrIdentifier, urlToken, navigate, t]);
 
     // Function to create session ONLY when QR is scanned
     const createSessionFromQR = () => {
         if (!qrIdentifier) return;
 
-        setMessage("Creating session...");
+        setMessage(t('creatingSession'));
 
         fetch(`${API_URL}/sessions/qr/${qrIdentifier}`, { method: "POST" })
             .then(res => res.json())
@@ -106,7 +117,7 @@ export default function ClientPage() {
                 console.error(err);
                 setSessionActive(false);
                 setRequiresRescan(true);
-                setMessage("Error creating session. Please rescan QR.");
+                setMessage(t('errorCreatingSession'));
             });
     };
 
@@ -125,27 +136,27 @@ export default function ClientPage() {
                         // Token expired, but don't redirect - just update state
                         setSessionActive(false);
                         setRequiresRescan(true);
-                        setMessage("Session expired. Please scan QR again.");
+                        setMessage(t('sessionExpired'));
                     }
                 })
                 .catch(() => {
                     setSessionActive(false);
                     setRequiresRescan(true);
-                    setMessage("Session expired. Please scan QR again.");
+                    setMessage(t('sessionExpired'));
                 });
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [urlToken, sessionActive]);
+    }, [urlToken, sessionActive, t]);
 
     // Handle call buttons
     const handleCall = (type) => {
         if (!sessionActive || !urlToken) {
-            setMessage("Session expired. Please scan QR again.");
+            setMessage(t('sessionExpired'));
             return;
         }
         if (cooldown) {
-            setMessage("You must wait before making another call.");
+            setMessage(t('pleaseWaitCall'));
             return;
         }
 
@@ -155,7 +166,7 @@ export default function ClientPage() {
         })
             .then(async res => {
                 if (res.ok) {
-                    setMessage(`${type === "waiter" ? "Waiter" : "Bill"} called successfully!`);
+                    setMessage(type === "waiter" ? t('waiterCalled') : t('billCalled'));
                     setCooldown(true);
                     setTimeout(() => setCooldown(false), 3 * 60 * 1000);
                 } else {
@@ -164,13 +175,13 @@ export default function ClientPage() {
                         // Session invalid
                         setSessionActive(false);
                         setRequiresRescan(true);
-                        setMessage("Session expired. Please scan QR again.");
+                        setMessage(t('sessionExpired'));
                     }
-                    setMessage(text || "Error making call. Try again.");
+                    setMessage(text || t('errorMakingCall'));
                 }
             })
             .catch(() => {
-                setMessage("Server error.");
+                setMessage(t('serverError'));
             });
     };
 
@@ -181,7 +192,7 @@ export default function ClientPage() {
             </header>
 
             <div className="content-container">
-                <h1>Welcome to SCAN</h1>
+                <h1>{t('welcome')}</h1>
 
                 {/* Show rescan message only */}
                 {requiresRescan && (
@@ -190,41 +201,49 @@ export default function ClientPage() {
                     </div>
                 )}
 
-
                 {!requiresRescan && message && <p className="info-message">{message}</p>}
 
                 <div className="button-container">
                     <button
                         className="action-button"
-                        onClick={() => setMessage("Menu coming soon!")}
+                        onClick={() => setMessage(t('menuComingSoon'))}
                     >
-                        <div className="button-icon"><img src="/menu_symbol.png" height="30px" alt="Menu" /></div>
-                        <p>Menu</p>
+                        <div className="button-icon">
+                            <img src="/menu_symbol.png" height="30px" alt={t('menu')} />
+                        </div>
+                        <p>{t('menu')}</p>
                     </button>
 
                     <button
                         className="action-button"
                         onClick={() => handleCall("waiter")}
-                        disabled={!sessionActive || cooldown || requiresRescan || !urlToken}  // Added !urlToken here
+                        disabled={!sessionActive || cooldown || requiresRescan || !urlToken}
                     >
-                        <div className="button-icon"><img src="/waiter_symbol.png" height="30px" alt="Call Waiter" /></div>
-                        <p>Call Waiter</p>
+                        <div className="button-icon">
+                            <img src="/waiter_symbol.png" height="30px" alt={t('callWaiter')} />
+                        </div>
+                        <p>{t('callWaiter')}</p>
                     </button>
 
                     <button
                         className="action-button"
                         onClick={() => handleCall("bill")}
-                        disabled={!sessionActive || cooldown || requiresRescan || !urlToken}  // Added !urlToken here
+                        disabled={!sessionActive || cooldown || requiresRescan || !urlToken}
                     >
-                        <div className="button-icon"><img src="/bill_symbol.png" height="30px" alt="Call Bill" /></div>
-                        <p>Call Bill</p>
+                        <div className="button-icon">
+                            <img src="/bill_symbol.png" height="30px" alt={t('callBill')} />
+                        </div>
+                        <p>{t('callBill')}</p>
                     </button>
                 </div>
             </div>
 
             <footer className="page-footer">
-                <p>Powered by <a href="https://scan.mk" target="_blank" rel="noopener noreferrer">scan.mk</a></p>
+                <p>{t('poweredBy')} <a href="https://scan.mk" target="_blank" rel="noopener noreferrer">scan.mk</a></p>
             </footer>
+
+            {/* Circular Flag Language Switcher */}
+            <LanguageSwitcher />
 
             <style>{`
                 * {

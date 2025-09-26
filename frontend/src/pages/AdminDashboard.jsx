@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "./api.js";
+import { useTranslation } from "../contexts/TranslationContext.jsx";
+import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
 
 export default function AdminDashboard() {
     const [calls, setCalls] = useState([]);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // Get current admin info from sessionStorage
     const getCurrentAdmin = () => {
-        const adminData = sessionStorage.getItem('adminData'); // Changed to sessionStorage
+        const adminData = sessionStorage.getItem('adminData');
         if (adminData) {
             return JSON.parse(adminData);
         }
@@ -57,7 +60,6 @@ export default function AdminDashboard() {
     };
 
     const handleLogout = () => {
-        // Clear sessionStorage instead of localStorage
         sessionStorage.removeItem('adminData');
         navigate("/login");
     };
@@ -67,9 +69,9 @@ export default function AdminDashboard() {
             {/* Navbar */}
             <nav className="dashboard-navbar">
                 <div className="navbar-content">
-                    <h1>Admin Dashboard</h1>
+                    <h1>{t('adminDashboard')}</h1>
                     <div className="navbar-nav">
-                        <div className="call-count">{calls.length} Active Calls</div>
+                        <div className="call-count">{calls.length} {t('activeCalls')}</div>
                         <div className="add" onClick={handleAddClick} style={{ cursor: "pointer" }}>
                             <img
                                 src="/add.png"
@@ -78,12 +80,16 @@ export default function AdminDashboard() {
                                     display: "flex",
                                     alignItems: "center",
                                 }}
-                                alt="Add Table"
+                                alt={t('addTable')}
                             />
+                        </div>
+                        {/* Language Selector in Navbar */}
+                        <div className="navbar-language-selector">
+                            <LanguageSwitcher />
                         </div>
                         {/* Logout Button */}
                         <button className="logout-btn" onClick={handleLogout}>
-                            Logout
+                            {t('logout')}
                         </button>
                     </div>
                 </div>
@@ -94,8 +100,8 @@ export default function AdminDashboard() {
                 {calls.length === 0 ? (
                     <div className="no-calls">
                         <div className="no-calls-icon">📞</div>
-                        <h2>No Active Calls</h2>
-                        <p>New calls will appear here when customers request assistance</p>
+                        <h2>{t('noActiveCalls')}</h2>
+                        <p>{t('newCallsAppear')}</p>
                     </div>
                 ) : (
                     <div className="calls-grid">
@@ -123,22 +129,22 @@ export default function AdminDashboard() {
                                     <div key={call.id} className={`call-card ${callTypeClass}`}>
                                         {/* Centered Table Number */}
                                         <div className="table-number-container">
-                                            <h2 className="table-number">TABLE {call.table.tableNumber}</h2>
+                                            <h2 className="table-number">{t('table')} {call.table.tableNumber}</h2>
                                         </div>
 
                                         {/* Call details below */}
                                         <div className="call-details">
                                             <div className="call-type">
                                                 <span className="call-icon">{callTypeIcon}</span>
-                                                {call.type === "WAITER" ? "Waiter Call" : "Bill Request"}
+                                                {call.type === "WAITER" ? t('waiterCall') : t('billRequest')}
                                             </div>
 
                                             <div className="table-location">
                                                 <span className="location-icon">📍</span>
-                                                {call.table.location || "Main Hall"}
+                                                {call.table.location || t('mainHall')}
                                             </div>
 
-                                            <div className="time-badge">{minutesPassed}m ago</div>
+                                            <div className="time-badge">{minutesPassed}{t('minutesAgo')}</div>
                                         </div>
 
                                         {/* Action button */}
@@ -147,12 +153,12 @@ export default function AdminDashboard() {
                                                 onClick={() => handleResolve(call.id)}
                                                 className="resolve-btn"
                                             >
-                                                Mark as Resolved
+                                                {t('markResolved')}
                                             </button>
                                         )}
                                         {call.resolved && (
                                             <div className="resolved-label">
-                                                Resolved ✓
+                                                {t('resolved')} ✓
                                             </div>
                                         )}
                                     </div>
@@ -188,6 +194,12 @@ export default function AdminDashboard() {
 
                 .add:hover {
                     transform: scale(1.1);
+                }
+
+                /* Navbar Language Selector */
+                .navbar-language-selector {
+                    display: flex;
+                    align-items: center;
                 }
 
                 /* Logout Button */
