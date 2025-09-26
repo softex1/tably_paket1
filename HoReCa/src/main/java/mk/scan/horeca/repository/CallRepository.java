@@ -15,4 +15,6 @@ public interface CallRepository extends JpaRepository<Call, Long> {
             TableEntity table, CallType type
     );
     List<Call> findByResolvedFalseAndCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime cutoff);
+
+    void deleteAllByTableId(Long tableId); // deletes all calls referencing the table
 }

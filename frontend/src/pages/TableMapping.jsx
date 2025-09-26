@@ -88,7 +88,7 @@ export default function TableMapping() {
         }
 
         if (!password.trim()) {
-            setPasswordError(t('passwordRequired'));
+            setPasswordError(t("passwordRequired"));
             return;
         }
 
@@ -96,26 +96,27 @@ export default function TableMapping() {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-                "X-Admin-Id": admin.adminId,
-                "X-Delete-Password": password
-            }
+                "Authorization": `Bearer ${admin.token}` // ✅ ADD THIS LINE
+            },
+            body: JSON.stringify({ password }),
         })
-            .then(async res => {
+            .then(async (res) => {
                 if (res.ok) {
-                    fetchTables();
+                    fetchTables(); // refresh table list
                     setShowPasswordModal(false);
                     setTableToDelete(null);
                     setPassword("");
                 } else {
                     const errorText = await res.text();
-                    setPasswordError(errorText || t('invalidPassword'));
+                    setPasswordError(errorText || t("invalidPassword"));
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
-                setPasswordError(t('failedToDeleteTable'));
+                setPasswordError(t("failedToDeleteTable"));
             });
     };
+
 
     const cancelDelete = () => {
         setShowPasswordModal(false);
@@ -167,7 +168,7 @@ export default function TableMapping() {
                         {/* Back Button */}
                         <div className="back" onClick={handleBackClick}>
                             {/*<img src="/back.png" height="35px" alt={t('back')} />*/}
-                            <p><b>Back</b></p>
+                            <b>{t('Back')}</b>
                         </div>
 
                         {/* Users Button */}
@@ -253,10 +254,10 @@ export default function TableMapping() {
                                     <div>
                                         <h3 className="table-title">{t('table')} {table.tableNumber}</h3>
                                         <p className="table-location">
-                                            📍 {table.location || t('mainHall')}
+                                            {table.location || t('mainHall')}
                                         </p>
                                         <p className="table-type">
-                                            {table.type === "HIGH" ? "🔝 " + t('highTable') : "⬇️ " + t('lowTable')}
+                                            {table.type === "HIGH" ? " " + t('highTable') : " " + t('lowTable')}
                                         </p>
                                     </div>
                                     <div className="card-actions">

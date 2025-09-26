@@ -81,14 +81,12 @@ export default function AdminDashboard() {
 
                 // Notify for each new call
                 newIncomingCalls.forEach(call => {
+                    // Build the message using current translations
                     const callType = call.type === "WAITER" ? t('waiterCall') : t('billRequest');
+                    const message = `${t('newCallFrom')} ${t('table')} ${call.table.tableNumber} - ${callType}`;
 
-                    // Show notification
-                    showNotification(
-                        `${t('newCallFrom')} ${t('table')} ${call.table.tableNumber} - ${callType}`,
-                        'info',
-                        3000
-                    );
+                    // Show notification with the properly translated message
+                    showNotification(message, 'info', 3000);
 
                     // Play sound only once for this call
                     playNotificationSound('call');
@@ -158,14 +156,16 @@ export default function AdminDashboard() {
                                 alt={t('addTable')}
                             />
                         </div>
-                        {/* Language Selector in Navbar */}
-                        <div className="navbar-language-selector">
-                            <LanguageSwitcher />
-                        </div>
+
                         {/* Logout Button */}
                         <button className="logout-btn" onClick={handleLogout}>
                             {t('logout')}
                         </button>
+
+                        {/* Language Selector in Navbar */}
+                        <div className="navbar-language-selector">
+                            <LanguageSwitcher />
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -368,7 +368,7 @@ export default function AdminDashboard() {
 
                 .navbar-content h1 {
                     margin: 0;
-                    font-size: 1.5rem;
+                    font-size: 2em;
                     font-weight: 600;
                 }
 

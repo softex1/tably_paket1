@@ -210,17 +210,19 @@ export default function UsersPage() {
                     <div className="navbar-nav">
                         <div className="user-count">{users.length} {t('users')}</div>
 
-                        {/* Language Selector */}
-                        <div className="navbar-language-selector">
-                            <LanguageSwitcher variant="navbar" />
-                        </div>
+
 
                         <div className="back" onClick={handleBackClick}>
-                            <img src="/back.png" height="35px" alt={t('back')} />
+                            {/*<img src="/back.png" height="35px" alt={t('back')} />*/}
+                            <b>{t('Back')}</b>
                         </div>
                         <button className="logout-btn" onClick={handleLogout}>
                             {t('logout')}
                         </button>
+                        {/* Language Selector */}
+                        <div className="navbar-language-selector">
+                            <LanguageSwitcher variant="navbar" />
+                        </div>
                     </div>
                 </div>
             </nav>

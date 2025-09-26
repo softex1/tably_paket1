@@ -51,11 +51,11 @@ export default function LoginPage() {
 
     return (
         <div className="login-container">
-            <h2>Admin Login</h2>
+            <h2>ЛОГИРАЊЕ</h2>
             <form onSubmit={handleLogin}>
                 <input
                     type="text"
-                    placeholder="Username"
+                    placeholder="КОРИСНИЧКО ИМЕ"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -63,14 +63,14 @@ export default function LoginPage() {
                 />
                 <input
                     type="password"
-                    placeholder="Password"
+                    placeholder="ЛОЗИНКА"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
                 />
                 <button type="submit" disabled={loading}>
-                    {loading ? "Logging in..." : "Login"}
+                    {loading ? "Се логира..." : "ЛОГИРАЈ СЕ"}
                 </button>
                 {error && <p className="error">{error}</p>}
             </form>
