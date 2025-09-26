@@ -24,7 +24,6 @@ public class UserController {
 
     @GetMapping
     public List<Admin> getAllUsers() {
-        // Don't return password hashes in response
         return adminRepository.findAll().stream()
                 .map(admin -> {
                     Admin sanitized = new Admin();

@@ -5,9 +5,7 @@ import mk.scan.horeca.model.Admin;
 import mk.scan.horeca.model.TableEntity;
 import mk.scan.horeca.repository.AdminRepository;
 import mk.scan.horeca.repository.TableRepository;
-import mk.scan.horeca.security.JwtUtil;
 import mk.scan.horeca.service.QRCodeService;
-import mk.scan.horeca.service.SessionService;
 import mk.scan.horeca.service.TableService;
 import mk.scan.horeca.util.PasswordEncoder;
 import org.springframework.http.HttpStatus;
@@ -21,23 +19,18 @@ import java.util.*;
 public class TableController {
     private final TableService tableService;
     private final QRCodeService qrCodeService;
-    private final SessionService sessionService;
     private final TableRepository tableRepo;
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
 
     public TableController(TableService tableService,
                            QRCodeService qrCodeService,
-                           SessionService sessionService,
-                           TableRepository tableRepo, AdminRepository adminRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+                           TableRepository tableRepo, AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
         this.tableService = tableService;
         this.qrCodeService = qrCodeService;
-        this.sessionService = sessionService;
         this.tableRepo = tableRepo;
         this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
     }
 
     // Create a new table
@@ -136,7 +129,7 @@ public class TableController {
         }
 
         try {
-            tableService.deleteTable(id); // ✅ deletes table + dependent calls
+            tableService.deleteTable(id); // deletes table + dependent calls
             return ResponseEntity.ok("Table deleted successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

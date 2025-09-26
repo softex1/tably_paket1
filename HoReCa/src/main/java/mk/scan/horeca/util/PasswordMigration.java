@@ -1,4 +1,3 @@
-// mk.scan.horeca.util.PasswordMigration.java
 package mk.scan.horeca.util;
 
 import mk.scan.horeca.model.Admin;

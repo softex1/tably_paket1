@@ -99,27 +99,27 @@ export default function ClientPage() {
     }, [qrIdentifier, urlToken, navigate, t]);
 
     // Function to create session ONLY when QR is scanned
-    const createSessionFromQR = () => {
-        if (!qrIdentifier) return;
-
-        setMessage(t('creatingSession'));
-
-        fetch(`${API_URL}/sessions/qr/${qrIdentifier}`, { method: "POST" })
-            .then(res => res.json())
-            .then(data => {
-                // Navigate to URL with new token
-                navigate(`/table/${qrIdentifier}/${data.token}`, { replace: true });
-                setSessionActive(true);
-                setRequiresRescan(false);
-                setMessage("");
-            })
-            .catch(err => {
-                console.error(err);
-                setSessionActive(false);
-                setRequiresRescan(true);
-                setMessage(t('errorCreatingSession'));
-            });
-    };
+    // const createSessionFromQR = () => {
+    //     if (!qrIdentifier) return;
+    //
+    //     setMessage(t('creatingSession'));
+    //
+    //     fetch(`${API_URL}/sessions/qr/${qrIdentifier}`, { method: "POST" })
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             // Navigate to URL with new token
+    //             navigate(`/table/${qrIdentifier}/${data.token}`, { replace: true });
+    //             setSessionActive(true);
+    //             setRequiresRescan(false);
+    //             setMessage("");
+    //         })
+    //         .catch(err => {
+    //             console.error(err);
+    //             setSessionActive(false);
+    //             setRequiresRescan(true);
+    //             setMessage(t('errorCreatingSession'));
+    //         });
+    // };
 
     // Periodic token validation - only if we have an active session
     useEffect(() => {

@@ -28,13 +28,13 @@ public class CallController {
             @RequestHeader(value = "X-Session-Token", required = false) String sessionToken) {
 
         try {
-            // 1️⃣ Check if session token is provided
+            // Check if session token is provided
             if (sessionToken == null || !sessionService.validateSession(sessionToken)) {
                 return ResponseEntity.status(403)
                         .body("Session expired or invalid. Please rescan QR code.");
             }
 
-            // 2️⃣ Retrieve session by token
+            // Retrieve session by token
             var sessionOpt = sessionService.getSessionByToken(sessionToken);
             if (sessionOpt.isEmpty()) {
                 return ResponseEntity.status(403).body("Invalid session token.");
@@ -42,26 +42,26 @@ public class CallController {
 
             var session = sessionOpt.get();
 
-            // 3️⃣ Check if session is active and not expired
+            // Check if session is active and not expired
             if (!session.isActive() || session.isExpired()) {
                 sessionService.expireSession(session); // mark as inactive
                 return ResponseEntity.status(403)
                         .body("Session expired. Please rescan QR code.");
             }
 
-            // 4️⃣ Ensure the session belongs to this table
+            // Ensure the session belongs to this table
             if (!session.getTable().getQrIdentifier().equals(qrIdentifier)) {
                 return ResponseEntity.status(403)
                         .body("Session token does not belong to this table.");
             }
 
-            // 5️⃣ Retrieve table entity
+            // Retrieve table entity
             TableEntity table = tableService.getByQrIdentifier(qrIdentifier);
             if (table == null) {
                 return ResponseEntity.badRequest().body("Table not found for QR: " + qrIdentifier);
             }
 
-            // 6️⃣ Create call
+            // Create call
             CallType callType;
             try {
                 callType = CallType.valueOf(type.toUpperCase());

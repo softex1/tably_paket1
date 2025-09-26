@@ -40,10 +40,6 @@ export default function TableMapping() {
         fetchTables();
     }, [navigate]);
 
-    const handleTableAdded = (newTable) => {
-        setTables(prev => [...prev, newTable]);
-    };
-
     const handleBackClick = () => {
         navigate("/admin");
     };
@@ -281,7 +277,7 @@ export default function TableMapping() {
                 </section>
             </main>
 
-            <style jsx>{`
+            <style>{`
                 * { margin: 0; padding: 0; box-sizing: border-box; }
 
                 #root { width: 100%; }

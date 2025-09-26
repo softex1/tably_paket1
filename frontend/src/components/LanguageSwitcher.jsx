@@ -45,7 +45,7 @@ const LanguageSwitcher = ({ variant = 'navbar' }) => {
                     )}
                 </div>
 
-                <style jsx>{`
+                <style>{`
           .navbar-language-switcher {
             position: relative;
           }
@@ -160,7 +160,7 @@ const LanguageSwitcher = ({ variant = 'navbar' }) => {
                 </button>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .language-switcher-bottom {
                     position: fixed;
                     bottom: 20px;

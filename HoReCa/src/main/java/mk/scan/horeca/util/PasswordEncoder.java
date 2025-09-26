@@ -1,4 +1,3 @@
-// mk.scan.horeca.util.PasswordEncoder.java
 package mk.scan.horeca.util;
 
 import de.mkammerer.argon2.Argon2;
@@ -17,8 +16,6 @@ public class PasswordEncoder {
 
     public String encode(String rawPassword) {
         try {
-            // Secure parameters for Argon2
-            // iterations: 10, memory: 65536 KiB (64MB), parallelism: 2
             return argon2.hash(10, 65536, 2, rawPassword.toCharArray());
         } finally {
             // Wipe sensitive data from memory

@@ -369,7 +369,7 @@ export default function UsersPage() {
                 </section>
             </main>
 
-            <style jsx>{`
+            <style>{`
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 #root { width: 100%; }
                 .users-page { min-height: 100vh; background: #f5f7fa; font-family: 'OpenSans','Segoe UI',sans-serif; width: 100%; }

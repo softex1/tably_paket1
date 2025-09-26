@@ -24,18 +24,11 @@ public class SessionService {
         this.tableRepo = tableRepo;
     }
 
-    /** ✅ Only called when QR is scanned */
+    /** Only called when QR is scanned */
     @Transactional
     public Session createNewSession(String qrIdentifier) {
         TableEntity table = tableRepo.findByQrIdentifier(qrIdentifier)
                 .orElseThrow(() -> new RuntimeException("Table not found"));
-
-        // 🟢 REMOVED the session deactivation - allow multiple sessions
-        // var activeSessions = sessionRepo.findAllByTableAndActive(table, true);
-        // for (Session s : activeSessions) {
-        //     s.setActive(false);
-        //     sessionRepo.save(s);
-        // }
 
         // Create new session for the new phone
         Session session = new Session();
@@ -48,7 +41,7 @@ public class SessionService {
         return sessionRepo.save(session);
     }
 
-    /** ✅ Validate a token */
+    /** Validate a token */
     public boolean validateSession(String token) {
         return sessionRepo.findByToken(token)
                 .filter(Session::isActive)
@@ -56,18 +49,18 @@ public class SessionService {
                 .isPresent();
     }
 
-    /** ✅ Retrieve session by token (needed in CallController) */
+    /**  Retrieve session by token (needed in CallController) */
     public Optional<Session> getSessionByToken(String token) {
         return sessionRepo.findByToken(token);
     }
 
-    /** ✅ Manually expire a session */
+    /**  Manually expire a session */
     public void expireSession(Session session) {
         session.setActive(false);
         sessionRepo.save(session);
     }
 
-    /** ✅ Clean up expired sessions periodically */
+    /** Clean up expired sessions periodically */
     @Scheduled(fixedRate = 5000) // Run every minute
     @Transactional
     public void cleanupExpiredSessions() {

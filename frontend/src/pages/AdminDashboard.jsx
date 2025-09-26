@@ -16,8 +16,7 @@ export default function AdminDashboard() {
         showNotification,
         hideNotification,
         markCallAsNotified,
-        hasCallBeenNotified,
-        clearNotifiedCalls
+        hasCallBeenNotified
     } = useCallNotifications();
 
     const initialLoad = useRef(true);
@@ -43,9 +42,6 @@ export default function AdminDashboard() {
             navigate("/login");
             return;
         }
-
-        // Clear notified calls on component mount (optional)
-        // clearNotifiedCalls();
 
         // Initial fetch
         fetchCalls();
@@ -256,7 +252,7 @@ export default function AdminDashboard() {
                 )}
             </main>
 
-            <style jsx>{`
+            <style>{`
                 /* New call animation - only lasts for 2 seconds */
                 .call-card.new-call {
                     animation: glowPulse 2s ease-in-out;

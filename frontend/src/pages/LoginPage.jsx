@@ -74,7 +74,7 @@ export default function LoginPage() {
                 </button>
                 {error && <p className="error">{error}</p>}
             </form>
-            <style jsx>{`
+            <style>{`
                 .login-container {
                     min-height: 100vh;
                     display: flex;

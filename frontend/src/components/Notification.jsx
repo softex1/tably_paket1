@@ -23,7 +23,7 @@ const Notification = ({ message, type, onClose, duration = 3000 }) => {
                 <button className="notification-close" onClick={onClose}>×</button>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .notification {
                     position: fixed;
                     top: 20px;
