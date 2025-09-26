@@ -92,7 +92,12 @@
             <artifactId>javase</artifactId>
             <version>3.5.2</version>
         </dependency>
-
+        <!-- pom.xml -->
+        <dependency>
+            <groupId>de.mkammerer</groupId>
+            <artifactId>argon2-jvm</artifactId>
+            <version>2.11</version>
+        </dependency>
     </dependencies>
 
     <build>

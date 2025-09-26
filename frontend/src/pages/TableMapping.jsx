@@ -170,11 +170,6 @@ export default function TableMapping() {
                             <p><b>Back</b></p>
                         </div>
 
-                        {/* Language Selector */}
-                        <div className="navbar-language-selector">
-                            <LanguageSwitcher variant="navbar" />
-                        </div>
-
                         {/* Users Button */}
                         <div className="users-btn" onClick={() => navigate("/users")}>
                             <span style={{fontSize: '1.5rem'}}>👥</span>
@@ -184,6 +179,11 @@ export default function TableMapping() {
                         <button className="logout-btn" onClick={handleLogout}>
                             {t('logout')}
                         </button>
+
+                        {/* Language Selector */}
+                        <div className="navbar-language-selector">
+                            <LanguageSwitcher variant="navbar" />
+                        </div>
                     </div>
                 </div>
             </nav>

@@ -25,7 +25,7 @@ const LanguageSwitcher = ({ variant = 'navbar' }) => {
             <div className="navbar-language-switcher">
                 <div className={`navbar-language-dropdown ${isOpen ? 'open' : ''}`}>
                     <button className="navbar-current-language" onClick={toggleDropdown}>
-                        <span className="flag">{getFlagEmoji(language)}</span>
+                        {/*<span className="flag">{getFlagEmoji(language)}</span>*/}
                         <span className="language-code">{language.toUpperCase()}</span>
                     </button>
 
@@ -37,7 +37,7 @@ const LanguageSwitcher = ({ variant = 'navbar' }) => {
                                     className={`navbar-language-option ${language === lang.code ? 'active' : ''}`}
                                     onClick={() => handleLanguageChange(lang.code)}
                                 >
-                                    <span className="flag">{getFlagEmoji(lang.code)}</span>
+                                    {/*<span className="flag">{getFlagEmoji(lang.code)}</span>*/}
                                     <span className="language-name">{lang.nativeName}</span>
                                 </button>
                             ))}

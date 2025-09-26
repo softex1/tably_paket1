@@ -2,6 +2,7 @@ package mk.scan.horeca.controller;
 
 import mk.scan.horeca.model.Admin;
 import mk.scan.horeca.repository.AdminRepository;
+import mk.scan.horeca.util.PasswordEncoder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,14 +15,25 @@ import java.util.Optional;
 public class UserController {
 
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(AdminRepository adminRepository) {
+    public UserController(AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
         this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
     public List<Admin> getAllUsers() {
-        return adminRepository.findAll();
+        // Don't return password hashes in response
+        return adminRepository.findAll().stream()
+                .map(admin -> {
+                    Admin sanitized = new Admin();
+                    sanitized.setId(admin.getId());
+                    sanitized.setUsername(admin.getUsername());
+                    // Don't set password
+                    return sanitized;
+                })
+                .toList();
     }
 
     @PostMapping
@@ -33,15 +45,26 @@ public class UserController {
             return ResponseEntity.badRequest().body("Username and password are required");
         }
 
+        // Validate username
+        if (username.length() < 3 || username.length() > 50) {
+            return ResponseEntity.badRequest().body("Username must be between 3 and 50 characters");
+        }
+
+        // Validate password strength
+        if (!passwordEncoder.isPasswordValid(password)) {
+            return ResponseEntity.badRequest().body(
+                    "Password must be 8-128 characters with uppercase, lowercase, numbers, and special characters"
+            );
+        }
+
         // Check if username already exists
         if (adminRepository.findByUsername(username).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
 
-        // Create new admin user
         Admin admin = new Admin();
-        admin.setUsername(username);
-        admin.setPassword(password); // In production, hash this password
+        admin.setUsername(username.trim());
+        admin.setPassword(passwordEncoder.encode(password));
 
         adminRepository.save(admin);
 
@@ -57,6 +80,18 @@ public class UserController {
             return ResponseEntity.badRequest().body("Old password and new password are required");
         }
 
+        // Validate new password strength
+        if (!passwordEncoder.isPasswordValid(newPassword)) {
+            return ResponseEntity.badRequest().body(
+                    "New password must be 8-128 characters with uppercase, lowercase, numbers, and special characters"
+            );
+        }
+
+        // Prevent setting the same password
+        if (oldPassword.equals(newPassword)) {
+            return ResponseEntity.badRequest().body("New password must be different from old password");
+        }
+
         Optional<Admin> userOptional = adminRepository.findById(id);
         if (userOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -65,12 +100,12 @@ public class UserController {
         Admin user = userOptional.get();
 
         // Verify old password
-        if (!user.getPassword().equals(oldPassword)) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             return ResponseEntity.badRequest().body("Old password is incorrect");
         }
 
         // Update password
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
         adminRepository.save(user);
 
         return ResponseEntity.ok("Password updated successfully");

@@ -1,13 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "./api.js";
 import { useTranslation } from "../contexts/TranslationContext.jsx";
 import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
+import Notification from "../components/Notification.jsx";
+import useCallNotifications from "../hooks/useCallNotifications.js";
+import { playNotificationSound } from "../utils/sound.js";
 
 export default function AdminDashboard() {
     const [calls, setCalls] = useState([]);
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const {
+        notification,
+        showNotification,
+        hideNotification,
+        markCallAsNotified,
+        hasCallBeenNotified,
+        clearNotifiedCalls
+    } = useCallNotifications();
+
+    const initialLoad = useRef(true);
+    const callsRef = useRef(calls);
+
+    // Keep ref updated
+    useEffect(() => {
+        callsRef.current = calls;
+    }, [calls]);
 
     // Get current admin info from sessionStorage
     const getCurrentAdmin = () => {
@@ -25,19 +44,61 @@ export default function AdminDashboard() {
             return;
         }
 
+        // Clear notified calls on component mount (optional)
+        // clearNotifiedCalls();
+
+        // Initial fetch
         fetchCalls();
 
+        // Set up interval for polling
         const interval = setInterval(() => {
             fetchCalls();
-        }, 10000);
+        }, 5000); // Poll every 5 seconds
 
         return () => clearInterval(interval);
     }, [navigate]);
 
+    const detectNewCalls = (newCalls) => {
+        if (initialLoad.current) {
+            initialLoad.current = false;
+            return []; // Don't notify on initial load
+        }
+
+        const currentCallIds = callsRef.current.map(call => call.id);
+        return newCalls.filter(call =>
+            !currentCallIds.includes(call.id) && // Is actually new
+            !call.resolved && // Not resolved
+            !hasCallBeenNotified(call.id) // Not already notified
+        );
+    };
+
     const fetchCalls = () => {
         fetch(`${API_URL}/admin/calls/recent`)
             .then(res => res.json())
-            .then(data => setCalls(data))
+            .then(newCalls => {
+                // Detect new calls that haven't been notified yet
+                const newIncomingCalls = detectNewCalls(newCalls);
+
+                // Notify for each new call
+                newIncomingCalls.forEach(call => {
+                    const callType = call.type === "WAITER" ? t('waiterCall') : t('billRequest');
+
+                    // Show notification
+                    showNotification(
+                        `${t('newCallFrom')} ${t('table')} ${call.table.tableNumber} - ${callType}`,
+                        'info',
+                        3000
+                    );
+
+                    // Play sound only once for this call
+                    playNotificationSound('call');
+
+                    // Mark this call as notified to prevent duplicate notifications
+                    markCallAsNotified(call.id);
+                });
+
+                setCalls(newCalls);
+            })
             .catch(err => console.error("Error fetching calls:", err));
     };
 
@@ -48,11 +109,18 @@ export default function AdminDashboard() {
                 setCalls(prev =>
                     prev.map(c => c.id === id ? { ...c, resolved: true } : c)
                 );
+
+                // Show resolution notification
+                showNotification(t('callMarkedResolved'), 'success', 2000);
+
                 setTimeout(() => {
                     setCalls(prev => prev.filter(c => c.id !== id));
                 }, 30000);
             })
-            .catch(err => console.error("Error resolving call:", err));
+            .catch(err => {
+                console.error("Error resolving call:", err);
+                showNotification(t('errorResolvingCall'), 'error', 3000);
+            });
     };
 
     const handleAddClick = () => {
@@ -62,6 +130,13 @@ export default function AdminDashboard() {
     const handleLogout = () => {
         sessionStorage.removeItem('adminData');
         navigate("/login");
+    };
+
+    // Check if call is new (for glow effect)
+    const isNewCall = (call) => {
+        return !initialLoad.current &&
+            !call.resolved &&
+            hasCallBeenNotified(call.id);
     };
 
     return (
@@ -95,6 +170,16 @@ export default function AdminDashboard() {
                 </div>
             </nav>
 
+            {/* Notification Popup */}
+            {notification && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    duration={notification.duration}
+                    onClose={hideNotification}
+                />
+            )}
+
             {/* Main Content */}
             <main className="dashboard-content">
                 {calls.length === 0 ? (
@@ -126,7 +211,10 @@ export default function AdminDashboard() {
                                 }
 
                                 return (
-                                    <div key={call.id} className={`call-card ${callTypeClass}`}>
+                                    <div
+                                        key={call.id}
+                                        className={`call-card ${callTypeClass} ${isNewCall(call) ? 'new-call' : ''}`}
+                                    >
                                         {/* Centered Table Number */}
                                         <div className="table-number-container">
                                             <h2 className="table-number">{t('table')} {call.table.tableNumber}</h2>
@@ -169,7 +257,34 @@ export default function AdminDashboard() {
             </main>
 
             <style jsx>{`
-                /* Reset and base styles */
+                /* New call animation - only lasts for 2 seconds */
+                .call-card.new-call {
+                    animation: glowPulse 2s ease-in-out;
+                    border: 2px solid #e74c3c;
+                }
+
+                @keyframes glowPulse {
+                    0% {
+                        box-shadow: 0 0 5px rgba(231, 76, 60, 0.4);
+                        transform: scale(1);
+                    }
+                    50% {
+                        box-shadow: 0 0 20px rgba(231, 76, 60, 0.8);
+                        transform: scale(1.02);
+                    }
+                    100% {
+                        box-shadow: 0 0 5px rgba(231, 76, 60, 0);
+                        transform: scale(1);
+                        border: 2px solid transparent;
+                    }
+                }
+
+                /* Remove the glow after animation completes */
+                .call-card.new-call {
+                    animation-fill-mode: forwards;
+                }
+
+                /* Existing styles remain the same... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -196,13 +311,11 @@ export default function AdminDashboard() {
                     transform: scale(1.1);
                 }
 
-                /* Navbar Language Selector */
                 .navbar-language-selector {
                     display: flex;
                     align-items: center;
                 }
 
-                /* Logout Button */
                 .logout-btn {
                     background: #e74c3c;
                     color: white;
