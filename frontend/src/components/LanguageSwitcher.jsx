@@ -1,250 +1,244 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../contexts/TranslationContext';
 
 const LanguageSwitcher = ({ variant = 'navbar' }) => {
-    const { language, switchLanguage, availableLanguages } = useTranslation();
-    const [isOpen, setIsOpen] = useState(false);
+    const { language, switchLanguage } = useTranslation();
+    const [isAnimating, setIsAnimating] = useState(false);
 
-    const toggleDropdown = () => setIsOpen(!isOpen);
+    const toggleLanguage = () => {
+        setIsAnimating(true);
+        const newLanguage = language === 'en' ? 'mk' : 'en';
+        switchLanguage(newLanguage);
 
-    const handleLanguageChange = (langCode) => {
-        switchLanguage(langCode);
-        setIsOpen(false);
+        // Reset animation after transition
+        setTimeout(() => setIsAnimating(false), 300);
     };
 
-    const getFlagEmoji = (countryCode) => {
-        const flagEmojis = {
-            'mk': '🇲🇰', // Macedonia flag
-            'en': '🇺🇸'  // USA flag
-        };
-        return flagEmojis[countryCode] || '🏴';
-    };
+    // Floating animation for mobile
+    useEffect(() => {
+        if (variant === 'floating') {
+            const element = document.querySelector('.language-switch-floating');
+            if (element) {
+                element.style.animation = 'float 3s ease-in-out infinite';
+            }
+        }
+    }, [variant]);
 
-    if (variant === 'navbar') {
+    // Floating circle variant (for mobile/tablet)
+    if (variant === 'floating') {
         return (
-            <div className="navbar-language-switcher">
-                <div className={`navbar-language-dropdown ${isOpen ? 'open' : ''}`}>
-                    <button className="navbar-current-language" onClick={toggleDropdown}>
-                        {/*<span className="flag">{getFlagEmoji(language)}</span>*/}
-                        <span className="language-code">{language.toUpperCase()}</span>
-                    </button>
-
-                    {isOpen && (
-                        <div className="navbar-language-options">
-                            {availableLanguages.map((lang) => (
-                                <button
-                                    key={lang.code}
-                                    className={`navbar-language-option ${language === lang.code ? 'active' : ''}`}
-                                    onClick={() => handleLanguageChange(lang.code)}
-                                >
-                                    {/*<span className="flag">{getFlagEmoji(lang.code)}</span>*/}
-                                    <span className="language-name">{lang.nativeName}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
+            <div className="language-switch-floating">
+                <button
+                    className={`language-circle ${language} ${isAnimating ? 'animating' : ''}`}
+                    onClick={toggleLanguage}
+                    aria-label={`Switch to ${language === 'en' ? 'Macedonian' : 'English'}`}
+                >
+                    <span className="language-text">
+                        {language === 'en' ? 'EN' : 'MK'}
+                    </span>
+                    <div className="language-glow"></div>
+                </button>
 
                 <style>{`
-          .navbar-language-switcher {
-            position: relative;
-          }
+                    
+                    .language-switch-floating {
+                        position: fixed;
+                        bottom: 25px;
+                        right: 25px;
+                        z-index: 1000;
+                    }
 
-          .navbar-language-dropdown {
-            position: relative;
-          }
+                    .language-circle {
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        border: none;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.4rem;
+                        font-weight: 600;
+                        position: relative;
+                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow:
+                                0 8px 32px rgba(0, 0, 0, 0.3),
+                                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }
 
-          .navbar-current-language {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 6px 12px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-          }
+                    .language-circle.en {
+                        background: #f5f5f5;
+                        color: white;
+                        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                    }
 
-          .navbar-current-language:hover {
-            background: rgba(255, 255, 255, 0.2);
-          }
+                    .language-circle.mk {
+                        background: #f5f5f5;
+                        color: #f1f2f6;
+                        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+                    }
 
-          .navbar-language-options {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            min-width: 140px;
-            margin-top: 5px;
-            z-index: 1000;
-          }
+                    .language-text {
+                        position: relative;
+                        z-index: 2;
+                        transition: all 0.3s ease;
+                    }
 
-          .navbar-language-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 15px;
-            width: 100%;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            font-size: 0.9rem;
-            color: #333;
-          }
 
-          .navbar-language-option:hover {
-            background: #f5f5f5;
-          }
+                    @keyframes float {
+                        0%, 100% {
+                            transform: translateY(0px);
+                        }
+                        50% {
+                            transform: translateY(-8px);
+                        }
+                    }
 
-          .navbar-language-option.active {
-            background: #e3f2fd;
-            font-weight: 600;
-          }
+                    /* Mobile styles */
+                    @media (max-width: 768px) {
+                        .language-switch-floating {
+                            bottom: 20px;
+                            right: 20px;
+                        }
 
-          .flag {
-            font-size: 1rem;
-          }
+                        .language-circle {
+                            width: 65px;
+                            height: 65px;
+                            font-size: 1.3rem;
+                        }
+                    }
 
-          .language-code {
-            font-weight: 600;
-          }
+                    /* Tablet styles */
+                    @media (min-width: 769px) and (max-width: 1024px) {
+                        .language-switch-floating {
+                            bottom: 30px;
+                            right: 30px;
+                        }
 
-          @media (max-width: 768px) {
-            .navbar-current-language {
-              padding: 4px 8px;
-              font-size: 0.8rem;
-            }
+                        .language-circle {
+                            width: 75px;
+                            height: 75px;
+                            font-size: 1.5rem;
+                        }
+                    }
 
-            .navbar-language-options {
-              min-width: 120px;
-            }
-
-            .navbar-language-option {
-              padding: 8px 12px;
-              font-size: 0.8rem;
-            }
-          }
-        `}</style>
+                    /* Hover effects for non-touch devices */
+                    @media (hover: hover) and (pointer: fine) {
+                        .language-circle:hover .language-text {
+                            transform: scale(1.1);
+                        }
+                    }
+                `}</style>
             </div>
         );
     }
 
-    // Bottom corner variant (for ClientPage)
+    // Navbar variant - compact circle
     return (
-        <div className="language-switcher-bottom">
-            <div className={`language-dropdown ${isOpen ? 'open' : ''}`}>
-                {isOpen && (
-                    <div className="language-options">
-                        {availableLanguages.map((lang) => (
-                            <button
-                                key={lang.code}
-                                className={`language-option ${language === lang.code ? 'active' : ''}`}
-                                onClick={() => handleLanguageChange(lang.code)}
-                            >
-                                <span className="flag">{getFlagEmoji(lang.code)}</span>
-                                <span className="language-name">{lang.nativeName}</span>
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                <button className="current-language" onClick={toggleDropdown}>
-                    <span className="flag">{getFlagEmoji(language)}</span>
-                </button>
-            </div>
+        <div className="language-switch-navbar">
+            <button
+                className={`language-circle-compact ${language} ${isAnimating ? 'animating' : ''}`}
+                onClick={toggleLanguage}
+                aria-label={`Switch to ${language === 'en' ? 'Macedonian' : 'English'}`}
+            >
+                <span className="language-text-compact">
+                    {language === 'en' ? 'EN' : 'MK'}
+                </span>
+            </button>
 
             <style>{`
-                .language-switcher-bottom {
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
+                .language-switch-navbar {
+                    position: relative;
                     z-index: 1000;
                 }
 
-                .language-dropdown {
-                    position: relative;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                }
-
-                .current-language {
-                    width: 50px;
-                    height: 50px;
+                .language-circle-compact {
+                    width: 40px;
+                    height: 40px;
                     border-radius: 50%;
-                    border: 2px solid #fff;
-                    background: #222;
-                    color: white;
+                    border: 2px solid rgba(255, 255, 255, 0.3);
                     cursor: pointer;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 1.5rem;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                    transition: all 0.3s ease;
-                }
-
-                .current-language:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-                }
-
-                .language-options {
-                    position: absolute;
-                    bottom: 60px;
-                    right: 0;
-                    background: white;
-                    border-radius: 12px;
-                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+                    font-size: 1rem;
+                    font-weight: 500;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    background: rgba(255, 255, 255, 0.15);
+                    backdrop-filter: blur(10px);
+                    color: white;
+                    text-transform: uppercase;
+                    position: relative;
                     overflow: hidden;
-                    min-width: 120px;
-                    margin-bottom: 10px;
                 }
 
-                .language-option {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 10px 15px;
-                    width: 100%;
-                    border: none;
-                    background: transparent;
-                    cursor: pointer;
-                    transition: background 0.2s ease;
-                    font-size: 0.9rem;
+                .language-circle-compact.en {
+                    border-color: gray;
                 }
 
-                .language-option:hover {
-                    background: #f5f5f5;
+                .language-circle-compact.mk {
+                    border-color: gray;
                 }
 
-                .language-option.active {
-                    background: #e3f2fd;
-                    font-weight: 600;
+                .language-text-compact {
+                    position: relative;
+                    z-index: 2;
+                    transition: transform 0.3s ease;
                 }
 
-                .flag {
-                    font-size: 1.2rem;
-                }
-
+                /* Mobile navbar adaptation */
                 @media (max-width: 768px) {
-                    .language-switcher-bottom {
-                        bottom: 15px;
-                        right: 15px;
+                    .language-switch-navbar {
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        z-index: 1000;
                     }
 
-                    .current-language {
-                        width: 45px;
-                        height: 45px;
-                        font-size: 1.3rem;
+                    .language-circle-compact {
+                        display: inline-block;        /* ✅ ensures it respects width/height */
+                        width: 50px !important;
+                        height: 50px !important;
+                        border: 2px solid white;
+                        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                        border-radius: 50%;          /* 50% is cleaner than 100% for circles */
+                        padding: 0;                  /* ✅ prevents ellipse from padding */
+                        line-height: 0;              /* ✅ avoids unwanted vertical stretching */
+                        font-family: SansSerif;
+                        color: #222;
+                        font-weight: 800;
                     }
+
+                    .language-circle-compact.mk {
+                        background: #f5f5f5;
+                        color: #1a1a1a;
+                        font-family: OpenSans;
+                    }
+                }
+
+                /* Ripple effect */
+                .language-circle-compact::before {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 0;
+                    height: 0;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.3);
+                    transform: translate(-50%, -50%);
+                    transition: width 0.3s, height 0.3s;
+                }
+
+                .language-circle-compact:hover::before {
+                    width: 100%;
+                    height: 100%;
+                }
+
+                .language-circle-compact:active::before {
+                    background: rgba(255, 255, 255, 0.5);
                 }
             `}</style>
         </div>

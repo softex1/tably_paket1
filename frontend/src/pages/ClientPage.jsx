@@ -14,23 +14,23 @@ export default function ClientPage() {
     const { id: qrIdentifier, token: urlToken } = useParams();
     const { t } = useTranslation();
 
-    if (!isMobile) {
-        return (
-            <>
-                <div style={{ textAlign: "center", padding: "50px" }}>
-                    <h1>SCAN.MK</h1>
-                    <p>{t("thisPageMobileOnly")}</p>
-                    <p>{t("scanWithPhone")}</p>
-                </div>
-
-                <style>{`
-                #root {
-                    width: 100%;
-                }
-            `}</style>
-            </>
-        );
-    }
+    // if (!isMobile) {
+    //     return (
+    //         <>
+    //             <div style={{ textAlign: "center", padding: "50px" }}>
+    //                 <h1>SCAN.MK</h1>
+    //                 <p>{t("thisPageMobileOnly")}</p>
+    //                 <p>{t("scanWithPhone")}</p>
+    //             </div>
+    //
+    //             <style>{`
+    //             #root {
+    //                 width: 100%;
+    //             }
+    //         `}</style>
+    //         </>
+    //     );
+    // }
 
 
     useEffect(() => {
@@ -424,12 +424,16 @@ export default function ClientPage() {
                     .logo {
                         height: 70px;
                     }
+                    
+                    .page-footer {
+                        bottom: 7.5%;
+                    }
                 }
 
                 @media (max-width: 768px) {
                     .client-page {
                         background: linear-gradient(rgba(245, 247, 250, 0.7), rgba(228, 232, 240, 0.7)),
-                        url('/background_tably_1.jpg') no-repeat center center;
+                        url('/background_tably_4.jpg') no-repeat center center;
                         background-size: cover;
                         padding: 15px;
                     }
@@ -481,13 +485,19 @@ export default function ClientPage() {
                         color: #2c3e50;
                         text-shadow: 0 1px 3px rgba(255,255,255,0.9);
                     }
+                    
+                    .page-footer {
+                        bottom: 7.5%;
+                    }
+                    
+                    
                 }
 
                 @media (max-width: 480px) {
                     .client-page {
                         padding: 15px;
                         background: linear-gradient(rgba(245, 247, 250, 0.6), rgba(228, 232, 240, 0.6)),
-                        url('/background_tably_3.jpg') no-repeat center center;
+                        url('/background-tably_4.jpg') no-repeat center center;
                         background-size: cover;
                     }
 
@@ -526,7 +536,7 @@ export default function ClientPage() {
                     }
 
                     .page-footer {
-                        bottom: 10px;
+                        bottom: 7.5%;
                     }
                 }
 

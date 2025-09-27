@@ -181,6 +181,10 @@ export default function TableMapping() {
                         <div className="navbar-language-selector">
                             <LanguageSwitcher variant="navbar" />
                         </div>
+
+                        <div className="support-btn" onClick={() => navigate("/contact")}>
+                            <span className="support-icon">🛠️</span>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -398,6 +402,11 @@ export default function TableMapping() {
                 .confirm-delete-btn:hover {
                     background: #c0392b;
                 }
+                
+                .support-icon:hover {
+                    cursor: pointer;
+                    transform: scale(1.2);
+                }
 
                 /* Navbar */
                 .dashboard-navbar { background: #222; color: white; padding: 1rem 0; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
@@ -407,7 +416,19 @@ export default function TableMapping() {
                 .table-count { background: gray; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 500; }
                 .back { cursor: pointer; transition: transform 0.2s ease; }
                 .back:hover { transform: scale(1.1); }
+                
+                .back {
+                    cursor: pointer;
+                    padding: 0.5rem 1rem;
+                    background: #555;
+                    border-radius: 5px;
+                    transition: background 0.3s ease;
+                }
 
+                .back:hover {
+                    background: #777;
+                }
+                
                 /* Logout Button */
                 .logout-btn {
                     background: #e74c3c;

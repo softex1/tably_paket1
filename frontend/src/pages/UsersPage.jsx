@@ -223,6 +223,9 @@ export default function UsersPage() {
                         <div className="navbar-language-selector">
                             <LanguageSwitcher variant="navbar" />
                         </div>
+                        <div className="support-btn" onClick={() => navigate("/contact")}>
+                            <span className="support-icon">🛠️</span>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -387,6 +390,23 @@ export default function UsersPage() {
                 .navbar-language-selector {
                     display: flex;
                     align-items: center;
+                }
+                
+                .back {
+                    cursor: pointer;
+                    padding: 0.5rem 1rem;
+                    background: #555;
+                    border-radius: 5px;
+                    transition: background 0.3s ease;
+                }
+
+                .back:hover {
+                    background: #777;
+                }
+                
+                .support-icon:hover {
+                    cursor: pointer;
+                    transform: scale(2);
                 }
 
                 .logout-btn {

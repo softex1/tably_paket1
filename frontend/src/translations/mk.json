@@ -91,5 +91,22 @@
   "errorResolvingCall": "Грешка при решавање на повикот",
   "Back": "Назад",
   "noTablesAdded": "Нема Додадено Маси",
-  "addTablesToStart": "Додади Маси"
+  "addTablesToStart": "Додади Маси",
+  "support": "Поддршка",
+  "contactSupport": "Контактирајте поддршка",
+  "getInTouch": "Станете во контакт",
+  "contactDescription": "Нашиот тим за поддршка е тука за да ви помогне со сите прашања или проблеми.",
+  "callUs": "Телефонирајте нè",
+  "emailUs": "Пишете ни",
+  "supportHours": "Работно време на поддршка",
+  "sendMessage": "Испратете ни порака",
+  "yourName": "Вашето име",
+  "yourEmail": "Вашиот е-маил",
+  "subject": "Наслов",
+  "message": "Порака",
+  "messagePlaceholder": "Опишете го вашиот проблем или прашање детално...",
+  "sending": "Испраќање",
+  "messageSentSuccess": "Вашата порака е успешно испратена!",
+  "messageSentError": "Неуспешно испраќање на порака. Обидете се повторно.",
+  "contactDashboard": "Контакт"
 }

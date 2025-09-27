@@ -4,6 +4,7 @@ import TableMapping from './pages/TableMapping.jsx';
 import ClientPage from "./pages/ClientPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
+import ContactPage from "./pages/ContactPage.jsx";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +41,11 @@ function App() {
                 <Route path="/users" element={
                     <ProtectedRoute>
                         <UsersPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/contact" element={
+                    <ProtectedRoute>
+                        <ContactPage />
                     </ProtectedRoute>
                 } />
 

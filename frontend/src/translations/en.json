@@ -91,5 +91,22 @@
   "errorResolvingCall": "Error resolving call",
   "Back": "Back",
   "noTablesAdded": "No Tables Added",
-  "addTablesToStart": "Add Tables to Start"
+  "addTablesToStart": "Add Tables to Start",
+  "support": "Support",
+  "contactSupport": "Contact Support",
+  "getInTouch": "Get in Touch",
+  "contactDescription": "Our support team is here to help you with any questions or issues you may have.",
+  "callUs": "Call Us",
+  "emailUs": "Email Us",
+  "supportHours": "Support Hours",
+  "sendMessage": "Send us a Message",
+  "yourName": "Your Name",
+  "yourEmail": "Your Email",
+  "subject": "Subject",
+  "message": "Message",
+  "messagePlaceholder": "Please describe your issue or question in detail...",
+  "sending": "Sending",
+  "messageSentSuccess": "Your message has been sent successfully!",
+  "messageSentError": "Failed to send message. Please try again.",
+  "contactDashboard": "Contact"
 }

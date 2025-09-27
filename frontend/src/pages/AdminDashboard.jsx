@@ -162,6 +162,11 @@ export default function AdminDashboard() {
                         <div className="navbar-language-selector">
                             <LanguageSwitcher />
                         </div>
+
+
+                        <div className="support-btn" onClick={() => navigate("/contact")}>
+                            <span className="support-icon">🛠️</span>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -311,7 +316,12 @@ export default function AdminDashboard() {
                     display: flex;
                     align-items: center;
                 }
-
+                
+                .support-icon:hover {
+                    cursor: pointer;
+                    transform: scale(2);
+                }
+                
                 .logout-btn {
                     background: #e74c3c;
                     color: white;
@@ -630,8 +640,8 @@ export default function AdminDashboard() {
                     }
 
                     .calls-grid {
-                        grid-template-columns: 1fr;
-                        gap: 1rem;
+                        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+                        gap: 0.5rem !important;
                     }
 
                     .call-card {
@@ -696,13 +706,17 @@ export default function AdminDashboard() {
                         max-width: 90%;
                         margin: 0 auto;
                     }
+                    
+                    .call-icon {
+                        display:none;
+                    }
                 }
 
                 /* Large desktop adjustments */
                 @media (min-width: 1440px) {
                     .calls-grid {
-                        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                        gap: 2rem;
+                        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                        gap: 1.1rem;
                     }
 
                     .dashboard-content {
