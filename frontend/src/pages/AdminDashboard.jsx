@@ -194,9 +194,8 @@ export default function AdminDashboard() {
                         {calls
                             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                             .map((call) => {
-                                const minutesPassed = Math.floor(
-                                    (Date.now() - new Date(call.createdAt)) / 60000
-                                );
+                                const createdAtUTC = new Date(call.createdAt).getTime();
+				const minutesPassed = Math.floor((Date.now() - createdAtUTC) / 60000);
 
                                 let callTypeClass = "";
                                 let callTypeIcon = "";

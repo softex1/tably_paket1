@@ -14,23 +14,23 @@ export default function ClientPage() {
     const { id: qrIdentifier, token: urlToken } = useParams();
     const { t } = useTranslation();
 
-    // if (!isMobile) {
-    //     return (
-    //         <>
-    //             <div style={{ textAlign: "center", padding: "50px" }}>
-    //                 <h1>SCAN.MK</h1>
-    //                 <p>{t("thisPageMobileOnly")}</p>
-    //                 <p>{t("scanWithPhone")}</p>
-    //             </div>
-    //
-    //             <style>{`
-    //             #root {
-    //                 width: 100%;
-    //             }
-    //         `}</style>
-    //         </>
-    //     );
-    // }
+    if (!isMobile) {
+        return (
+            <>
+                <div style={{ textAlign: "center", padding: "50px" }}>
+                    <h1>SCAN.MK</h1>
+                    <p>{t("thisPageMobileOnly")}</p>
+                    <p>{t("scanWithPhone")}</p>
+                </div>
+
+                <style>{`
+                #root {
+                    width: 100%;
+                }
+            `}</style>
+            </>
+        );
+    }
 
 
     useEffect(() => {

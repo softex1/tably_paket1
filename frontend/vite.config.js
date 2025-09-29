@@ -3,15 +3,12 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    outDir: 'dist', // Output folder for the production build
+    emptyOutDir: true,
+  },
   server: {
-    host: true, // Listen on all network interfaces
-    port: 5173,
-    proxy: {
-      '/api': 'http://192.168.100.145:8080', // Spring Boot backend
-      '/ws': {
-        target: 'http://192.168.100.145:8080',
-        ws: true,
-      },
-    },
+    host: true, // Only relevant for dev
+    port: 5173,  // Dev server port, won't affect production build
   },
 });

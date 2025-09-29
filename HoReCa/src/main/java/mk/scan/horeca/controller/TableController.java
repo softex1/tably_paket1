@@ -23,6 +23,8 @@ public class TableController {
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
 
+    String domain = "http://app1.scan.mk";
+
     public TableController(TableService tableService,
                            QRCodeService qrCodeService,
                            TableRepository tableRepo, AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
@@ -43,7 +45,7 @@ public class TableController {
         TableEntity savedTable = tableService.save(table);
 
         // QR URL points to frontend table page
-        String qrUrl = "https://localhost:5173/table/" + savedTable.getQrIdentifier();
+        String qrUrl = domain + "/table/" + savedTable.getQrIdentifier();
         String qrCodeBase64 = qrCodeService.generateQRCodeBase64(qrUrl, 250, 250);
 
         return ResponseEntity.ok(Map.of(
@@ -60,7 +62,7 @@ public class TableController {
                 .orElseThrow(() -> new RuntimeException("Table not found"));
 
         // QR URL only needs the table identifier
-        String qrUrl = "https://192.168.100.145:5173/table/" + table.getQrIdentifier();
+        String qrUrl = domain + "/table/" + table.getQrIdentifier();
 
         return ResponseEntity.ok(qrUrl);
     }
@@ -72,7 +74,7 @@ public class TableController {
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (TableEntity table : tables) {
-            String qrUrl = "http://192.168.100.145:5173/table/" + table.getQrIdentifier();
+            String qrUrl = domain + "/table/" + table.getQrIdentifier();
             String qrCodeBase64 = qrCodeService.generateQRCodeBase64(qrUrl, 250, 250);
 
             Map<String, Object> map = Map.of(

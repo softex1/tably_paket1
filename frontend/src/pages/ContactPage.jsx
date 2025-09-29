@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../contexts/TranslationContext.jsx";
 import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
+import {API_URL} from "./api.js";
 
 export default function ContactPage() {
     const [name, setName] = useState("");
@@ -22,63 +23,56 @@ export default function ContactPage() {
         setIsSubmitting(true);
         setSubmitStatus("");
 
-        // Simulate form submission (you can integrate with your backend email service)
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+            const res = await fetch(`${API_URL}/contact`, { // Replace with your deployed backend URL if needed
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    subject,
+                    message,
+                }),
+            });
 
-            // Here you would typically send the data to your backend
-            // For now, we'll just show a success message
-            setSubmitStatus("success");
-            setName("");
-            setEmail("");
-            setSubject("");
-            setMessage("");
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Contact form error:", errorText);
+                setSubmitStatus("error");
+            } else {
+                setSubmitStatus("success");
+                setName("");
+                setEmail("");
+                setSubject("");
+                setMessage("");
+            }
         } catch (error) {
+            console.error("Network error:", error);
             setSubmitStatus("error");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleBackClick = () => {
-        navigate(-1); // Go back to previous page
-    };
-
+    const handleBackClick = () => navigate(-1);
     const handleLogout = () => {
         sessionStorage.removeItem('adminData');
         navigate("/login");
     };
-
-    const handleCallSupport = () => {
-        window.location.href = `tel:${phoneNumber}`;
-    };
-
-    const handleEmailSupport = () => {
-        window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject || 'Support Request')}&body=${encodeURIComponent(message || '')}`;
-    };
+    const handleCallSupport = () => window.location.href = `tel:${phoneNumber}`;
+    const handleEmailSupport = () => window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject || 'Support Request')}&body=${encodeURIComponent(message || '')}`;
 
     return (
         <div className="contact-page">
-            {/* Navbar */}
-
             <nav className="dashboard-navbar">
                 <div className="navbar-content">
                     <h1>{t('contactDashboard')}</h1>
                     <div className="navbar-nav">
-
-                        <div className="back" onClick={handleBackClick}>
-                            <b>{t('back')}</b>
-                        </div>
-
-                        {/* Logout Button */}
-                        <button className="logout-btn" onClick={handleLogout}>
-                            {t('logout')}
-                        </button>
-
-                        {/* Language Selector in Navbar */}
-                        <div className="navbar-language-selector">
-                            <LanguageSwitcher />
-                        </div>
+                        <div className="back" onClick={handleBackClick}><b>{t('back')}</b></div>
+                        <button className="logout-btn" onClick={handleLogout}>{t('logout')}</button>
+                        <div className="navbar-language-selector"><LanguageSwitcher /></div>
                     </div>
                 </div>
             </nav>
@@ -87,25 +81,17 @@ export default function ContactPage() {
                 <h2>{t('getInTouch')}</h2>
                 <p>{t('contactDescription')}</p>
             </div>
-            {/* Main Content */}
+
             <main className="contact-content">
-
                 <div className="contact-container">
-
-
-
-                    {/* Contact Information Section */}
+                    {/* Contact Info */}
                     <section className="contact-info">
-
-
                         <div className="contact-methods">
                             <div className="contact-method">
                                 <div className="method-icon">📞</div>
                                 <div className="method-details">
                                     <h3>{t('callUs')}</h3>
-                                    <p className="phone-number" onClick={handleCallSupport}>
-                                        {phoneNumber}
-                                    </p>
+                                    <p className="phone-number" onClick={handleCallSupport}>{phoneNumber}</p>
                                 </div>
                             </div>
 
@@ -113,83 +99,43 @@ export default function ContactPage() {
                                 <div className="method-icon">✉️</div>
                                 <div className="method-details">
                                     <h3>{t('emailUs')}</h3>
-                                    <p className="email-address" onClick={handleEmailSupport}>
-                                        {supportEmail}
-                                    </p>
+                                    <p className="email-address" onClick={handleEmailSupport}>{supportEmail}</p>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    {/* Contact Form Section */}
+                    {/* Contact Form */}
                     <section className="contact-form-section">
                         <h2>{t('sendMessage')}</h2>
                         <form onSubmit={handleSubmit} className="contact-form">
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>{t('yourName')} *</label>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        required
-                                        disabled={isSubmitting}
-                                    />
+                                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required disabled={isSubmitting}/>
                                 </div>
                                 <div className="form-group">
                                     <label>{t('yourEmail')} *</label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        disabled={isSubmitting}
-                                    />
+                                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting}/>
                                 </div>
                             </div>
 
                             <div className="form-group">
                                 <label>{t('subject')} *</label>
-                                <input
-                                    type="text"
-                                    value={subject}
-                                    onChange={(e) => setSubject(e.target.value)}
-                                    required
-                                    disabled={isSubmitting}
-                                />
+                                <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} required disabled={isSubmitting}/>
                             </div>
 
                             <div className="form-group">
                                 <label>{t('message')} *</label>
-                                <textarea
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
-                                    rows="6"
-                                    required
-                                    disabled={isSubmitting}
-                                    placeholder={t('messagePlaceholder')}
-                                />
+                                <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows="6" required disabled={isSubmitting} placeholder={t('messagePlaceholder')}/>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="submit-btn"
-                                disabled={isSubmitting}
-                            >
+                            <button type="submit" className="submit-btn" disabled={isSubmitting}>
                                 {isSubmitting ? t('sending') + "..." : t('sendMessage')}
                             </button>
 
-                            {submitStatus === "success" && (
-                                <div className="success-message">
-                                    ✅ {t('messageSentSuccess')}
-                                </div>
-                            )}
-
-                            {submitStatus === "error" && (
-                                <div className="error-message">
-                                    ❌ {t('messageSentError')}
-                                </div>
-                            )}
+                            {submitStatus === "success" && <div className="success-message">✅ {t('messageSentSuccess')}</div>}
+                            {submitStatus === "error" && <div className="error-message">❌ {t('messageSentError')}</div>}
                         </form>
                     </section>
                 </div>

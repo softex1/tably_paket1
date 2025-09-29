@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: horeca-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: horeca_db
+      POSTGRES_USER: scan
+      POSTGRES_PASSWORD: ScanApp1#
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./HoReCa
+    container_name: horeca-backend
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/horeca_db
+      SPRING_DATASOURCE_USERNAME: scan
+      SPRING_DATASOURCE_PASSWORD: ScanApp1#
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      TZ: Europe/Skopje
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: horeca-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres_data:
+
